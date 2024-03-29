@@ -28,7 +28,8 @@ class SongController extends AbstractController
 
         if (!$songs) {
             return $this->json([
-                'message' => 'No songs found',
+                'error' => true,
+                'message' => "Aucun son n'a été trouvé",
             ], JsonResponse::HTTP_NOT_FOUND);
         }
 
