@@ -10,8 +10,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 use App\Entity\Artist;
 
-use Symfony\Component\HttpFoundation\Response;
-
 use Symfony\Component\HttpFoundation\Request;
 
 class AlbumController extends AbstractController
@@ -34,16 +32,21 @@ class AlbumController extends AbstractController
         $album = $this->repository->find($id);
 
         if (!$album) {
-            return $this->json([
-                'error' => 'Album not found',
-                'albumid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Album introuvable",
+                'album_id' => $id
+            ],
+            404);
         }
 
         $this->entityManager->remove($album);
         $this->entityManager->flush();
 
-        return $this->json(['message' => 'Album deleted successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Votre album a été supprimé avec succès'
+        ]);
     }
 
     #[Route('/album', name: 'post_album', methods: 'POST')]
@@ -52,7 +55,11 @@ class AlbumController extends AbstractController
         parse_str($request->getContent(), $data);
 
         if (!isset($data['nom']) || !isset($data['categ']) || !isset($data['cover']) || !isset($data['year']) || !isset($data['idalbum'])) {
-            return new JsonResponse(['error' => 'Missing data'], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Une ou plusieurs données obligatoires sont manquantes'
+            ], 
+            400);
         }
 
         $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
@@ -71,9 +78,9 @@ class AlbumController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse([
-            'validate' => 'Album added successfully',
+            'error' => false,
+            'message' => 'Album ajouté avec succès',
             'id' => $album->getId()
-
         ]);
     }
 
@@ -84,14 +91,14 @@ class AlbumController extends AbstractController
 
         if (!$album) {
             return new JsonResponse([
-                'error' => 'Album not found',
-                'id' => $id
-            ]);
+                'error' => true,
+                'message' => "Album introuvable",
+                'album_id' => $id
+            ],
+            404);
         }
 
-
         parse_str($request->getContent(), $data);
-
 
         if (isset($data['nom'])) {
             $album->setNom($data['nom']);
@@ -109,10 +116,8 @@ class AlbumController extends AbstractController
             $album->setIdAlbum($data['idalbum']);
         }
 
-
         $this->entityManager->persist($album);
         $this->entityManager->flush();
-
 
         return new JsonResponse(['message' => 'Album updated successfully']);
     }
@@ -120,39 +125,33 @@ class AlbumController extends AbstractController
     #[Route('/album/{id}', name: 'app_album', methods: ['GET'])]
     public function get_album_by_id(int $id): JsonResponse
     {
-
         $album = $this->repository->find($id);
 
         if (!$album) {
-            return $this->json([
-                'error' => 'Album not found',
-                'albumid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Album introuvable",
+                'album_id' => $id
+            ],
+            404);
         }
 
-
-
-        return $this->json([
-            /*
-            'nom' => $album->getNom(),
-            'categ' => $album->getCateg(),
-            'cover' => $album->getCover(),
-            'year' => $album->getYear(),
-            'idalbum' => $album->getIdAlbum(),
-            */
+        return new JsonResponse([
             $album->serializer()
         ]);
     }
+
     #[Route('/album', name: 'app_albums_get', methods: ['GET'])]
     public function get_all_albums(): JsonResponse
     {
-
         $albums = $this->repository->findAll();
 
         if (!$albums) {
-            return $this->json([
-                'message' => 'No albums found',
-            ], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Aucun album existant"
+            ],
+            404);
         }
 
         $serializedAlbums = [];
@@ -162,7 +161,7 @@ class AlbumController extends AbstractController
                 'categ' => $album->getCateg(),
                 'cover' => $album->getCover(),
                 'year' => $album->getYear(),
-                'idalbum' => $album->getIdAlbum(),
+                'album_id' => $album->getIdAlbum(),
             ];
         }
 
