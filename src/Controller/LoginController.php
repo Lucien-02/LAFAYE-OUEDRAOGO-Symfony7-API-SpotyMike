@@ -95,7 +95,7 @@ class LoginController extends  AbstractController
                 $token = $JWTManager->create($user);
                 return new JsonResponse([
                     'error' => false,
-                    'message' => "L'utilisateur a était authentifié avec succès",
+                    'message' => "L'utilisateur a été authentifié avec succès",
                     'user' => $user->serializer(),
                     'token' => $token,
                 ]);
