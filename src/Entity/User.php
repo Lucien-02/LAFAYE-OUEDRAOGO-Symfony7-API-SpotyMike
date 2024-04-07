@@ -224,15 +224,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function serializer()
     {
         return [
-            "id" => $this->getId(),
-            "idUser" => $this->getIdUser(),
             "firstname" => $this->getFirstname(),
             "lastname" => $this->getLastname(),
-            "sexe" => $this->getSexe(),
             "email" => $this->getEmail(),
             "tel" => $this->getTel(),
-            "birthday" => $this->getDateBirth()->format('d-m-Y'),
-            "createAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
+            "sexe" => $this->getSexe(),
+            "dateBirth" => $this->getDateBirth()->format('d/m/Y'),
+            "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
             "updateAt" => $this->getUpdateAt()->format('Y-m-d H:i:s'),
             "artist" => $this->getArtist() ?  $this->getArtist()->serializer() : [],
         ];

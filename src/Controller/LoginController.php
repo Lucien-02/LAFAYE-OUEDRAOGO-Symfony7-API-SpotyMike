@@ -14,6 +14,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use App\Util\ErrorTypes;
 use App\Util\ErrorManager;
+use Exception;
 
 
 
@@ -32,48 +33,13 @@ class LoginController extends  AbstractController
         $this->repository = $entityManager->getRepository(User::class);
     }
 
-    #[Route('/register', name: 'app_register', methods: 'POST')]
-    public function register(ErrorManager $errorManager): JsonResponse
-    {
-        //vérification attribut nécessaire
-        if (!isset($data['firstname']) || !isset($data['lastname']) || !isset($data['email']) || !isset($data['password']) || !isset($data['dateBirth'])) {
-            return $errorManager->generateError(ErrorTypes::MISSING_ATTRIBUTES);
-        }
-        $email = $data['email'];
-        // vérif format mail
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Le format de l'email est invalide."
-            ], 400);
-        }
-        $password = $data['password'];
-        // vérif format mdp
-        if (
-            !(strlen($password) >= 8 &&
-                preg_match('/[A-Z]/', $password) &&
-                preg_match('/[a-z]/', $password) &&
-                preg_match('/[0-9]/', $password) &&
-                preg_match('/[!@#$%^&*()-_+=]/', $password))
-        ) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Le mot de passe doit contenir au moins une majuscule,une minuscule,un chiffre,un caractère spécial et avoir 8 caractères minimum."
-            ], 400);
-        }
-        return new JsonResponse([
-            'message' => 'Welcome to MikeLand',
-            'path' => 'src/Controller/LoginController.php',
-        ]);
-    }
-
     // use Symfony\Component\HttpFoundation\Request;
     #[Route('/login', name: 'app_login_post', methods: ['POST', 'PUT'])]
     public function login(Request $request, JWTTokenManagerInterface $JWTManager, UserPasswordHasherInterface $passwordHash, ErrorManager $errorManager): JsonResponse
     {
         try {
             // Définir les paramètres de limite de fréquence
-            $maxAttempts = 5;
+            $maxAttempts = 20;
             $interval = 300;
 
             //recup l'ip
@@ -103,29 +69,20 @@ class LoginController extends  AbstractController
 
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire
-            if (!isset($data['Email']) || !isset($data['Password'])) {
-                return $errorManager->generateError(ErrorTypes::MISSING_ATTRIBUTES);
-            }
+            $errorManager->checkRequiredAttributes($data, ['Email', 'Password']);
             $email = $data['Email'];
+            $password = $data['Password'];
             // vérif format mail
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return $errorManager->generateError(ErrorTypes::INVALID_EMAIL);
             }
-            $password = $data['Password'];
+
             // vérif format mdp
-            if (
-                !(strlen($password) >= 8 &&
-                    preg_match('/[A-Z]/', $password) &&
-                    preg_match('/[a-z]/', $password) &&
-                    preg_match('/[0-9]/', $password) &&
-                    preg_match('/[!@#$%^&*()-_+=]/', $password))
-            ) {
-                return $errorManager->generateError(ErrorTypes::INVALID_PASSWORD_FORMAT);
-            }
+            $errorManager->isValidPassword($password);
+
             $user = $this->repository->findOneByEmail($email);
             // vérif Compte existant
             if (!$user) {
-
                 return $errorManager->generateError(ErrorTypes::USER_NOT_FOUND);
             }
             /*
@@ -143,10 +100,10 @@ class LoginController extends  AbstractController
                     'token' => $token,
                 ]);
             }
-            return $errorManager->generateError(ErrorTypes::USER_NOT_FOUND);
-        } catch (\Exception $e) {
             // Gestion des erreurs inattendues
-            return $errorManager->generateError(ErrorTypes::UNEXPECTED_ERROR);
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $errorManager->generateError($exception->getMessage());
         }
     }
 }
