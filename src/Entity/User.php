@@ -200,7 +200,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        return [];
+        return ["PUBLIC_ACCESS"];
     }
 
     /**
@@ -218,7 +218,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return "";
+        return $this->getEmail();
     }
 
     public function serializer()
