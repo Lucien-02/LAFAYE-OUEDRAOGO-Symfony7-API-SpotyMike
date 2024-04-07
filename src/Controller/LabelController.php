@@ -26,9 +26,11 @@ class LabelController extends AbstractController
         $labels = $this->repository->findAll();
 
         if (!$labels) {
-            return $this->json([
-                'message' => 'No labels found',
-            ], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Aucun label trouvé"
+            ],
+            404);
         }
 
         $serializedLabels = [];
@@ -48,10 +50,11 @@ class LabelController extends AbstractController
         $label = $this->repository->find($id);
 
         if (!$label) {
-            return $this->json([
-                'error' => 'Label not found',
-                'labelid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Label introuvable",
+                'label_id' => $id,
+            ], 404);
         }
 
         return $this->json([
@@ -67,9 +70,10 @@ class LabelController extends AbstractController
 
         if (!isset($data['nom']) || !isset($data['create_at'])) {
             return new JsonResponse([
-                'error' => 'Missing data',
-                'data' => $data
-            ], JsonResponse::HTTP_BAD_REQUEST);
+                'error' => true,
+                'message' => 'Une ou plusieurs données obligatoires sont manquantes'
+            ], 
+            400);
         }
 
         $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
@@ -82,7 +86,8 @@ class LabelController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse([
-            'validate' => 'Label added successfully',
+            'error' => false,
+            'message' => 'Label ajouté avec succès',
             'id' => $label->getId()
         ]);
     }
@@ -93,10 +98,11 @@ class LabelController extends AbstractController
         $label = $this->repository->find($id);
 
         if (!$label) {
-            return $this->json([
-                'error' => 'Label not found',
-                'labelid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Label introuvable",
+                'label_id' => $id,
+            ], 404);
         }
         parse_str($request->getContent(), $data);
 
@@ -107,7 +113,10 @@ class LabelController extends AbstractController
         $this->entityManager->persist($label);
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'Label updated successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Label mis à jour avec succès'
+        ]);
     }
 
     #[Route('/label/{id}', name: 'app_label_delete', methods: 'DELETE')]
@@ -116,15 +125,19 @@ class LabelController extends AbstractController
         $label = $this->repository->find($id);
 
         if (!$label) {
-            return $this->json([
-                'error' => 'Label not found',
-                'labelid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Label introuvable",
+                'label_id' => $id,
+            ], 404);
         }
 
         $this->entityManager->remove($label);
         $this->entityManager->flush();
 
-        return $this->json(['message' => 'Label deleted successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Votre label a été supprimé avec succès'
+        ]);
     }
 }
