@@ -119,7 +119,10 @@ class AlbumController extends AbstractController
         $this->entityManager->persist($album);
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'Album updated successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Album mis à jour avec succès'
+        ]);
     }
 
     #[Route('/album/{id}', name: 'app_album', methods: ['GET'])]
