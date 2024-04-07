@@ -30,9 +30,10 @@ class UserController extends AbstractController
         $users = $this->repository->findAll();
 
         if (!$users) {
-            return $this->json([
-                'message' => 'No users found',
-            ], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Aucun utilisateur trouvé",
+            ], 404);
         }
 
         $serializedUsers = [];
@@ -56,10 +57,11 @@ class UserController extends AbstractController
         $user = $this->repository->find($id);
 
         if (!$user) {
-            return $this->json([
-                'error' => 'User not found',
-                'userid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Utilisateur introuvable",
+                'user_id' => $id,
+            ], 404);
         }
 
         return $this->json($user->serializer());
@@ -134,7 +136,7 @@ class UserController extends AbstractController
 
             return new JsonResponse([
                 'error' => false,
-                'message' => "L'utilisateur a bien était crée avec succès",
+                'message' => "L'utilisateur a été créé avec succès",
                 'user' => $user->serializer(),
 
             ]);
@@ -151,24 +153,25 @@ class UserController extends AbstractController
         $user = $this->repository->find($id);
 
         if (!$user) {
-            return $this->json([
-                'error' => 'User not found',
-                'userid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Utilisateur introuvable",
+                'user_id' => $id,
+            ], 404);
         }
         parse_str($request->getContent(), $data);
 
         $email = $data['email'];
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return new JsonResponse([
-                'error' => 'Invalid email address',
+                'error' => 'Adresse email invalide',
                 'email' => $email
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
         $existingUser = $this->repository->findOneByEmail($data['email']);
         if ($existingUser !== null) {
             return new JsonResponse([
-                'error' => 'Email already exists',
+                'error' => 'Cet email existe déjà',
                 'email' => $data['email']
             ], JsonResponse::HTTP_CONFLICT);
         }
@@ -191,7 +194,10 @@ class UserController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'User updated successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => "Utilisateur mis à jour avec succès"
+        ]);
     }
 
     #[Route('/user/{id}', name: 'app_user_delete', methods: 'DELETE')]
@@ -200,15 +206,19 @@ class UserController extends AbstractController
         $user = $this->repository->find($id);
 
         if (!$user) {
-            return $this->json([
-                'error' => 'User not found',
-                'userid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Utilisateur introuvable",
+                'user_id' => $id,
+            ], 404);
         }
 
         $this->entityManager->remove($user);
         $this->entityManager->flush();
 
-        return $this->json(['message' => 'User deleted successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => "Votre utilisateur a été supprimé avec succès"
+        ]);
     }
 }
