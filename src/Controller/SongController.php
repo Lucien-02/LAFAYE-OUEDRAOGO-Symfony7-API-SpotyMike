@@ -27,9 +27,10 @@ class SongController extends AbstractController
         $songs = $this->repository->findAll();
 
         if (!$songs) {
-            return $this->json([
-                'message' => 'No songs found',
-            ], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Aucun son trouvé",
+            ], 404);
         }
 
         $serializedSongs = [];
@@ -59,10 +60,11 @@ class SongController extends AbstractController
         $song = $this->repository->find($id);
 
         if (!$song) {
-            return $this->json([
-                'error' => 'Song not found',
-                'songid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Son introuvable",
+                'song_id' => $id,
+            ], 404);
         }
 
         return $this->json([
@@ -88,9 +90,10 @@ class SongController extends AbstractController
 
         if (!isset($data['title']) || !isset($data['url']) || !isset($data['cover']) || !isset($data['visibility']) || !isset($data['album_id']) || !isset($data['create_at']) || !isset($data['song'])) {
             return new JsonResponse([
-                'error' => 'Missing data',
-                'data' => $data
-            ], JsonResponse::HTTP_BAD_REQUEST);
+                'error' => true,
+                'message' => 'Une ou plusieurs données obligatoires sont manquantes'
+            ], 
+            400);
         }
 
         $album = $this->entityManager->getRepository(Album::class)->find($data['album_id']);
@@ -112,7 +115,8 @@ class SongController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse([
-            'validate' => 'Song added successfully',
+            'error' => false,
+            'message' => 'Son ajouté avec succès',
             'id' => $song->getId()
         ]);
     }
@@ -123,10 +127,11 @@ class SongController extends AbstractController
         $song = $this->repository->find($id);
 
         if (!$song) {
-            return $this->json([
-                'error' => 'Song not found',
-                'songid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Son introuvable",
+                'song_id' => $id,
+            ], 404);
         }
         parse_str($request->getContent(), $data);
 
@@ -146,7 +151,10 @@ class SongController extends AbstractController
         $this->entityManager->persist($song);
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'Song updated successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Son mis à jour avec succès'
+        ]);
     }
 
     #[Route('/song/{id}', name: 'app_song_delete', methods: 'DELETE')]
@@ -155,15 +163,19 @@ class SongController extends AbstractController
         $song = $this->repository->find($id);
 
         if (!$song) {
-            return $this->json([
-                'error' => 'Song not found',
-                'songid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Son introuvable",
+                'song_id' => $id,
+            ], 404);
         }
 
         $this->entityManager->remove($song);
         $this->entityManager->flush();
 
-        return $this->json(['message' => 'Song deleted successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Votre son a été supprimé avec succès'
+        ]);
     }
 }
