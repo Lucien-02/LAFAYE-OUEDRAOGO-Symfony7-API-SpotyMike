@@ -31,16 +31,20 @@ class PlaylistController extends AbstractController
         $playlist = $this->repository->find($id);
 
         if (!$playlist) {
-            return $this->json([
-                'error' => 'Playlist not found',
-                'playlistid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Playlist introuvable",
+                'playlist_id' => $id,
+            ], 404);
         }
 
         $this->entityManager->remove($playlist);
         $this->entityManager->flush();
 
-        return $this->json(['message' => 'Playlist deleted successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Votre playlist a été supprimée avec succès'
+        ]);
     }
 
     #[Route('/playlist', name: 'post_playlist', methods: 'POST')]
@@ -50,9 +54,10 @@ class PlaylistController extends AbstractController
 
         if (!isset($data['title']) || !isset($data['public']) || !isset($data['idplaylist'])) {
             return new JsonResponse([
-                'error' => 'Missing data',
-                'data' => $data
-            ], JsonResponse::HTTP_BAD_REQUEST);
+                'error' => true,
+                'message' => 'Une ou plusieurs données obligatoires sont manquantes'
+            ], 
+            400);
         }
         $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
     
@@ -71,9 +76,9 @@ class PlaylistController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse([
-            'validate' => 'Playlist added successfully',
+            'error' => false,
+            'message' => 'Playlist ajoutée avec succès',
             'id' => $playlist->getId()
-
         ]);
     }
 
@@ -84,14 +89,13 @@ class PlaylistController extends AbstractController
 
         if (!$playlist) {
             return new JsonResponse([
-                'error' => 'Playlist not found',
-                'id' => $id
-            ]);
+                'error' => true,
+                'message' => "Playlist introuvable",
+                'playlist_id' => $id,
+            ], 404);
         }
 
-
         parse_str($request->getContent(), $data);
-
 
         if (isset($data['title'])) {
             $playlist->setTitle($data['title']);
@@ -102,13 +106,13 @@ class PlaylistController extends AbstractController
         $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
         $playlist->setUpdateAt($date);
 
-
-
         $this->entityManager->persist($playlist);
         $this->entityManager->flush();
 
-
-        return new JsonResponse(['message' => 'Playlist updated successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Playlist mise à jour avec succès'
+        ]);
     }
 
     #[Route('/playlist/{id}', name: 'app_playlist', methods: ['GET'])]
@@ -118,23 +122,22 @@ class PlaylistController extends AbstractController
         $playlist = $this->repository->find($id);
 
         if (!$playlist) {
-            return $this->json([
-                'error' => 'Playlist not found',
-                'playlistid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Playlist introuvable",
+                'playlist_id' => $id,
+            ], 404);
         }
-
 
         return $this->json([
             'id' => $playlist->getId(),
-
             'title' => $playlist->getTitle(),
             'public' => $playlist->isPublic(),
-            'createat' => $playlist->getCreateAt(),
-            'updateat' => $playlist->getUpdateAt(),
-
+            'create_at' => $playlist->getCreateAt(),
+            'update_at' => $playlist->getUpdateAt(),
         ]);
     }
+
     #[Route('/playlist', name: 'app_playlists_get', methods: ['GET'])]
     public function get_all_playlists(): JsonResponse
     {
@@ -142,20 +145,20 @@ class PlaylistController extends AbstractController
         $playlists = $this->repository->findAll();
 
         if (!$playlists) {
-            return $this->json([
-                'message' => 'No playlists found',
-            ], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse([
+                'error' => true,
+                'message' => "Aucune playlist trouvée"
+            ], 404);
         }
 
         $serializedPlaylists = [];
         foreach ($playlists as $playlist) {
             $serializedPlaylists[] = [
                 'id' => $playlist->getId(),
-
                 'title' => $playlist->getTitle(),
                 'public' => $playlist->isPublic(),
-                'createat' => $playlist->getCreateAt()->format('Y-m-d H:i:s'),
-                'updateat' => $playlist->getUpdateAt()->format('Y-m-d H:i:s'),
+                'create_at' => $playlist->getCreateAt()->format('Y-m-d H:i:s'),
+                'update_at' => $playlist->getUpdateAt()->format('Y-m-d H:i:s'),
             ];
         }
 
