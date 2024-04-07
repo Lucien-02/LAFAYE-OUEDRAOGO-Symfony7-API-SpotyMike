@@ -31,16 +31,21 @@ class ArtistController extends AbstractController
         $artist = $this->repository->find($id);
 
         if (!$artist) {
-            return $this->json([
-                'error' => 'Artist not found',
-                'artistid' => $id,
-            ]);
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Artiste introuvable',
+                'artist_id' => $id,
+            ],
+            404);
         }
 
         $this->entityManager->remove($artist);
         $this->entityManager->flush();
 
-        return $this->json(['message' => 'Artist deleted successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Votre profil artiste a été supprimé avec succès'
+        ]);
     }
 
     #[Route('/artist', name: 'post_artist', methods: 'POST')]
@@ -61,7 +66,7 @@ class ArtistController extends AbstractController
             if (False) {
                 return new JsonResponse([
                     'error' => true,
-                    'message' => "Votre token n'est pas correct "
+                    'message' => "Votre token n'est pas correct"
                 ], 401);
             }
 
@@ -78,7 +83,7 @@ class ArtistController extends AbstractController
             if ($existingArtist) {
                 return new JsonResponse([
                     'error' => true,
-                    'message' => "Un compte utilisant ce nom d'artiste déja enregistrer"
+                    'message' => "Un compte utilisant ce nom d'artiste est déjà enregistré"
                 ], 409);
             }
 
@@ -86,7 +91,10 @@ class ArtistController extends AbstractController
             $user = $this->entityManager->getRepository(User::class)->find($data['user_id_user_id']);
 
             if (!$user) {
-                return new JsonResponse(['error' => 'User introuvable'], JsonResponse::HTTP_BAD_REQUEST);
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'Utilisateur introuvable'
+                ], 404);
             }
             $artist = new Artist();
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
@@ -99,8 +107,6 @@ class ArtistController extends AbstractController
                     'message' => "Age minimum requis (16 ans)",
                 ], 401);
             }
-
-
 
             $artist->setFullname($data['fullname']);
             $artist->setUserIdUser($user);
@@ -115,15 +121,15 @@ class ArtistController extends AbstractController
 
             return new JsonResponse([
                 'sucess' => true,
-                'message' => "Votre compte d'artiste a été créé avec succès.Bienvuenue dans notre communauté d'artistes !",
+                'message' => "Votre compte d'artiste a été créé avec succès. Bienvenue dans notre communauté d'artistes !",
                 'artist_id' => $artist->getId()
-
             ]);
+
         } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
             // Renvoyer un message d'erreur indiquant que la donnée est déjà présente
             return new JsonResponse([
                 'error' => true,
-                'message' => 'La donnée que vous essayez d\'insérer existe déjà dans la base de données.'
+                'message' => 'La donnée que vous essayez d\'insérer existe déjà dans la base de données'
             ], 409);
         }
     }
@@ -135,14 +141,14 @@ class ArtistController extends AbstractController
 
         if (!$artist) {
             return new JsonResponse([
-                'error' => 'Artist not found',
-                'id' => $id
-            ]);
+                'error' => true,
+                'message' => 'Artiste introuvable',
+                'artist_id' => $id,
+            ],
+            404);
         }
 
-
         parse_str($request->getContent(), $data);
-
 
         if (isset($data['fullname'])) {
             $artist->setFullname($data['fullname']);
@@ -154,7 +160,10 @@ class ArtistController extends AbstractController
         $this->entityManager->persist($artist);
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'Artist updated successfully']);
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Artiste mis à jour avec succès'
+        ]);
     }
 
     #[Route('/artist/', name: 'empty_artist', methods: ['GET'])]
@@ -162,7 +171,7 @@ class ArtistController extends AbstractController
     {
         return $this->json([
             "error" => true,
-            "message" => "Nom de l'artiste manquants",
+            "message" => "Nom de l'artiste manquant",
         ], 400);
     }
     #[Route('/artist/all', name: 'app_artists_get', methods: ['GET'])]
@@ -177,7 +186,7 @@ class ArtistController extends AbstractController
         }
         if (!$artists) {
             return $this->json([
-                'message' => 'Aucun utilisateur trouver',
+                'message' => 'Aucun utilisateur trouvé',
             ], JsonResponse::HTTP_NOT_FOUND);
         }
 
