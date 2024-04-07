@@ -9,6 +9,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Util\ErrorTypes;
+use App\Util\ErrorManager;
+use Exception;
 
 class UserController extends AbstractController
 {
@@ -62,70 +65,84 @@ class UserController extends AbstractController
         return $this->json($user->serializer());
     }
 
-    #[Route('/user', name: 'app_user_post', methods: 'POST')]
-    public function postUser(Request $request, UserPasswordHasherInterface $passwordHash): JsonResponse
+    #[Route('/register', name: 'app_register', methods: 'POST')]
+    public function register(Request $request, ErrorManager $errorManager, UserPasswordHasherInterface $passwordHash): JsonResponse
     {
-        parse_str($request->getContent(), $data);
-        //vérification attribut nécessaire
-        if (!isset($data['firstname']) || !isset($data['email']) || !isset($data['encrypte']) || !isset($data['sexe']) || !isset($data['birthday'])) {
-            return new JsonResponse([
-                'error' => 'Missing data',
-                'data' => $data
-            ], JsonResponse::HTTP_BAD_REQUEST);
-        }
+        try {
 
-
-
-        $email = $data['email'];
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return new JsonResponse([
-                'error' => 'Invalid email address',
-                'email' => $email
-            ], JsonResponse::HTTP_BAD_REQUEST);
-        }
-        $existingUser = $this->repository->findOneByEmail($data['email']);
-        if ($existingUser !== null) {
-            return new JsonResponse([
-                'error' => 'Email already exists',
-                'email' => $data['email']
-            ], JsonResponse::HTTP_CONFLICT);
-        }
-
-
-        $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-        $user = new User();
-        $user->setIdUser($data['id_user']);
-        $user->setFirstname($data['firstname']);
-        $user->setLastname($data['lastname']);
-        $dateOfBirth = \DateTimeImmutable::createFromFormat('d-m-Y', $data['birthday']);
-        $user->setDateBirth($dateOfBirth);
-        $user->setSexe($data['sexe']);
-        $user->setEmail($data['email']);
-
-        $hash = $passwordHash->hashPassword($user, $data['encrypte']);
-
-        $user->setPassword($hash);
-        if (isset($data['tel'])) {
-            if (preg_match('/^0[1-9]([-. ]?[0-9]{2}){4}$/', $data['tel'])) {
-                $user->setTel($data['tel']);
-            } else {
-                return new JsonResponse([
-                    'error' => 'Invalid phone number',
-                    'phone' => $data['tel']
-                ], JsonResponse::HTTP_BAD_REQUEST);
+            parse_str($request->getContent(), $data);
+            //vérification attribut nécessaire
+            $errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth']);
+            $firstname = $data['firstname'];
+            $lastname = $data['lastname'];
+            $email = $data['email'];
+            $password = $data['password'];
+            $birthday =  $data['dateBirth'];
+            if (isset($data['sexe'])) {
+                $sexe = $data['sexe'];
             }
+            if (isset($data['tel'])) {
+                $phoneNumber = $data['tel'];
+            }
+            $ageMin = 12;
+            // vérif format mail
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $errorManager->generateError(ErrorTypes::INVALID_EMAIL);
+            }
+
+            // vérif format mdp
+            $errorManager->isValidPassword($password);
+            // vérif format date
+            $errorManager->isValidDateFormat($birthday, 'd/m/Y');
+            // vérif age
+            $errorManager->isAgeValid($birthday, 12);
+
+            //vérif tel
+            if (isset($data['tel'])) {
+                $errorManager->isValidPhoneNumber($phoneNumber);
+            }
+
+            //vérif sexe
+            if (isset($data['sexe'])) {
+                $errorManager->isValidGender($sexe);
+            }
+
+            //vérif email unique
+            if ($this->repository->findOneByEmail($email)) {
+                return $errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
+            }
+
+            $user = new User();
+
+            $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            $user->setCreateAt($date);
+            $user->setUpdateAt($date);
+
+
+            $user->setFirstname($firstname);
+            $user->setLastname($lastname);
+            $dateOfBirth = new \DateTimeImmutable($birthday);
+            $user->setDateBirth($dateOfBirth);
+            $user->setSexe($sexe);
+            $user->setEmail($email);
+
+            $hash = $passwordHash->hashPassword($user, $password);
+            $user->setPassword($hash);
+
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+
+            return new JsonResponse([
+                'error' => false,
+                'message' => "L'utilisateur a bien était crée avec succès",
+                'user' => $user->serializer(),
+
+            ]);
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        $user->setCreateAt($date);
-        $user->setUpdateAt($date);
-
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-
-        return new JsonResponse([
-            'validate' => 'User added successfully',
-            'id' => $user->getId()
-        ]);
     }
 
     #[Route('/user/{id}', name: 'app_user_put', methods: 'PUT')]
