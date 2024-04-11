@@ -80,6 +80,13 @@ class ErrorManager
         }
     }
 
+    public function checkNotUniqueArtistName(object $existingArtist)
+    {
+        if ($existingArtist) {
+            throw new Exception(ErrorTypes::NOT_UNIQUE_ARTIST_NAME);
+        }
+    }
+
     public  function tooManyAttempts(int $maxAttempts, int $interval, string $ip, string $type)
     {
 
@@ -149,7 +156,7 @@ class ErrorManager
                 break;
             case 'InvalidAge':
                 $errorMessage = "L'utilisateur doit avoir au moins $variable ans.";
-                $codeErreur = 400;
+                $codeErreur = 403;
                 break;
             case 'InvalidPasswordFormat':
                 $errorMessage = "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre, un caractère spécial et avoir 8 caractères minimum.";
@@ -195,6 +202,10 @@ class ErrorManager
             case 'NotFoundEntityId':
                 $errorMessage = "$variable introuvable.";
                 $codeErreur = 404;
+                break;
+            case 'NotUniqueArtistName':
+                $errorMessage = "Ce nom d'artiste est déjà pris. Veuillez en choisir un autre.";
+                $codeErreur = 409;
                 break;
             default:
                 $errorMessage = 'Erreur inconnue.';
