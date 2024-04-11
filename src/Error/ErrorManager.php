@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Util;
+namespace App\Error;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Exception;
 
 class ErrorManager
 {
-
-
     public function isValidDateFormat(string $dateString, string $expectedFormat)
     {
         $date = \DateTime::createFromFormat($expectedFormat, $dateString);
@@ -24,6 +22,18 @@ class ErrorManager
             preg_match('/[0-9]/', $password) &&
             preg_match('/[!@#$%^&*()-_+=]/', $password))) {
             throw new Exception(ErrorTypes::INVALID_PASSWORD_FORMAT);
+        }
+    }
+    public function checkNotFoundEntity(array $entity, string $entityName)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_ENTITY, $entityName);
+        }
+    }
+    public function checkNotFoundEntityId(object $entity, string $entityName)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_ENTITY_ID, $entityName);
         }
     }
     public function checkRequiredAttributes(array $data, array $requiredAttributes)
@@ -54,9 +64,7 @@ class ErrorManager
 
     public  function isValidGender(string $gender)
     {
-
         if (!in_array($gender, [0, 1])) {
-
             throw new Exception(ErrorTypes::INVALID_GENDER);
         }
     }
@@ -68,28 +76,27 @@ class ErrorManager
 
         switch ($errorType) {
             case 'TooManyAttempts':
-                $errorMessage = "Trop de tentatives de connexion (5 max). Veuillez réessayer ultérieurement - $variable minutes restantes";
+                $errorMessage = "Trop de tentatives de connexion (5 max). Veuillez réessayer ultérieurement : $variable minutes restantes.";
                 $codeErreur = 429;
                 break;
             case 'MissingAttributes':
-                $errorMessage = 'Une ou plusieurs données obligatoires sont manquantes';
+                $errorMessage = 'Une ou plusieurs données obligatoires sont manquantes.';
                 $codeErreur = 400;
                 break;
             case 'MissingAttributesLogin':
-                $errorMessage = 'Email/Password manquants';
+                $errorMessage = 'Email ou password manquant.';
                 $codeErreur = 400;
                 break;
             case 'InvalidEmail':
                 $errorMessage = "Le format de l'email est invalide.";
                 $codeErreur = 400;
                 break;
-
             case 'InvalidDateFormat':
-                $errorMessage = "Le format de la date de naissance est invalide.Le format attendu est JJ/MM/AAAA";
+                $errorMessage = "Le format de la date de naissance est invalide. Le format attendu est JJ/MM/AAAA.";
                 $codeErreur = 400;
                 break;
             case 'InvalidAge':
-                $errorMessage = "L'utilisateur doit avoir au moins $variable ans";
+                $errorMessage = "L'utilisateur doit avoir au moins $variable ans.";
                 $codeErreur = 400;
                 break;
             case 'InvalidPasswordFormat':
@@ -97,7 +104,7 @@ class ErrorManager
                 $codeErreur = 400;
                 break;
             case 'UserNotFound':
-                $errorMessage = 'Aucun utilisateur trouvé. Mot de passe ou Identifiant incorrect';
+                $errorMessage = 'Aucun utilisateur trouvé. Mot de passe ou identifiant incorrect.';
                 $codeErreur = 400;
                 break;
             case 'AccountNotActive':
@@ -113,15 +120,29 @@ class ErrorManager
                 $codeErreur = 400;
                 break;
             case 'InvalidGender':
-                $errorMessage = 'La valeur du champ sexe est invalide.Les valeurs autorisées sont 0 pour Femme,1 pour Homme.';
+                $errorMessage = 'La valeur du champ sexe est invalide. Les valeurs autorisées sont 0 pour Femme et 1 pour Homme.';
                 $codeErreur = 400;
                 break;
             case 'NotUniqueEmail':
-                $errorMessage = 'Cet email est déja utilisé par un autre compte.';
+                $errorMessage = 'Cet email est déjà utilisé par un autre compte.';
                 $codeErreur = 409;
                 break;
+            case 'NotFoundEntity':
+                if ($variable == "playlist"){
+                    $errorMessage = "Aucune $variable trouvée.";
+                    $codeErreur = 404;
+                }
+                else {
+                    $errorMessage = "Aucun $variable trouvé.";
+                    $codeErreur = 404;
+                }
+                break;
+            case 'NotFoundEntityId':
+                $errorMessage = "$variable introuvable.";
+                $codeErreur = 404;
+                break;
             default:
-                $errorMessage = 'Erreur inconnue';
+                $errorMessage = 'Erreur inconnue.';
                 $codeErreur = 400;
                 break;
         }

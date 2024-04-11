@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Util;
+namespace App\Error;
 
 class ErrorTypes
 {
@@ -8,6 +8,8 @@ class ErrorTypes
     public const MISSING_ATTRIBUTES = 'MissingAttributes';
     public const INVALID_EMAIL = 'InvalidEmail';
     public const INVALID_PASSWORD_FORMAT = 'InvalidPasswordFormat';
+    public const NOT_FOUND_ENTITY = 'NotFoundEntity';
+    public const NOT_FOUND_ENTITY_ID = 'NotFoundEntityId';
     public const USER_NOT_FOUND = 'UserNotFound';
     public const ACCOUNT_NOT_ACTIVE = 'AccountNotActive';
     public const UNEXPECTED_ERROR = 'UnexpectedError';
