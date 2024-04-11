@@ -36,33 +36,10 @@ class LoginController extends  AbstractController
     public function login(Request $request, JWTTokenManagerInterface $JWTManager, UserPasswordHasherInterface $passwordHash, ErrorManager $errorManager): JsonResponse
     {
         try {
-            // Définir les paramètres de limite de fréquence
-            $maxAttempts = 20;
-            $interval = 300;
-
+            //Gerer le nome de tentative de connection max
             //recup l'ip
             $ip = $request->getClientIp();
-            // Récupérer le nombre de tentatives de connexion pour cette adresse IP dans le cache
-            $attempts = $this->cache->getItem('login_attempts_' . $ip)->get() ?: 0;
-            $timezone = new \DateTimeZone('Europe/Paris');
-            $time = new DateTime('now', $timezone);
-            // Vérifier si le nombre de tentatives a dépassé la limite
-            if ($attempts >= $maxAttempts) {
-                $expiration = $this->cache->getItem('expiration_' . $ip)->get();
-                $temprestant = $expiration->modify('+5 minutes')->diff($time)->format('%i');
-
-                return $errorManager->generateError(ErrorTypes::TOO_MANY_ATTEMPTS, $temprestant);
-            }
-            $attempts++;
-            $item = $this->cache->getItem('login_attempts_' . $ip);
-            $expiration = $this->cache->getItem('expiration_' . $ip);
-
-            $expiration->set($time);
-            $this->cache->save($expiration);
-            $item->set($attempts);
-            $item->expiresAfter($interval);
-
-            $this->cache->save($item);
+            $errorManager->tooManyAttempts(5, 300, $ip, 'connection');
 
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire
@@ -88,6 +65,7 @@ class LoginController extends  AbstractController
                 return $errorManager->generateError("AccountNotActive");
             }
             */
+            dd($passwordHash->isPasswordValid($user, $password));
             if ($passwordHash->isPasswordValid($user, $password)) {
                 $token = $JWTManager->create($user);
                 return new JsonResponse([
@@ -100,7 +78,48 @@ class LoginController extends  AbstractController
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-            return $errorManager->generateError($exception->getMessage());
+            return $errorManager->generateError($exception->getMessage(), $exception->getCode());
+        }
+    }
+    // use Symfony\Component\HttpFoundation\Request;
+    #[Route('/password-lost', name: 'app_password-lost', methods: ['POST'])]
+    public function password_lost(Request $request, ErrorManager $errorManager): JsonResponse
+    {
+        try {
+            //Gerer le nombre de tentative de connection max
+            //recup l'ip
+            $ip = $request->getClientIp();
+            $errorManager->tooManyAttempts(3, 300, $ip, 'password-lost');
+
+            parse_str($request->getContent(), $data);
+
+            $email = $data["email"] ?? null;
+
+            $email_found = $this->repository->findOneByEmail($email);
+            //Email manquant
+
+            if (!isset($data["email"])) {
+                return $errorManager->generateError(ErrorTypes::MISSING_EMAIL);
+            }
+            // vérif format mail
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $errorManager->generateError(ErrorTypes::INVALID_EMAIL);
+            }
+            //Email non trouvé
+            if (!$email_found) {
+                return $errorManager->generateError(ErrorTypes::EMAIL_NOT_FOUND);
+            } else {
+
+                return new JsonResponse([
+                    'error' => false,
+                    'message' => "Un email de réinitialisation de mot de passe a été envoyé à votre adresse email.Veuiller suivre les instructions contenues dans l'email pour réinitialiser votre mot de passe.",
+
+                ]);
+            }
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
     }
 }

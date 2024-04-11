@@ -4,9 +4,20 @@ namespace App\Error;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Exception;
+use Psr\Cache\CacheItemPoolInterface;
+use DateTime;
+use Throwable;
+
 
 class ErrorManager
 {
+    private CacheItemPoolInterface $cache;
+
+    public function __construct(CacheItemPoolInterface $cache)
+    {
+        $this->cache = $cache;
+    }
+
     public function isValidDateFormat(string $dateString, string $expectedFormat)
     {
         $date = \DateTime::createFromFormat($expectedFormat, $dateString);
@@ -69,18 +80,59 @@ class ErrorManager
         }
     }
 
+    public  function tooManyAttempts(int $maxAttempts, int $interval, string $ip, string $type)
+    {
+
+
+        // Récupérer le nombre de tentatives de connexion pour cette adresse IP dans le cache
+        $attempts = $this->cache->getItem('login_attempts_' . $ip)->get() ?: 0;
+        $timezone = new \DateTimeZone('Europe/Paris');
+        $time = new DateTime('now', $timezone);
+        // Vérifier si le nombre de tentatives a dépassé la limite
+        if ($attempts >= $maxAttempts) {
+            $expiration = $this->cache->getItem('expiration_' . $ip)->get();
+            $temprestant = $expiration->modify('+5 minutes')->diff($time)->format('%i');
+            switch ($type) {
+                case 'password-lost':
+                    throw new Exception(ErrorTypes::TOO_MANY_PASSWORD_ATTEMPTS, $temprestant);
+                    break;
+                case 'connection':
+                    throw new Exception(ErrorTypes::TOO_MANY_CONNECTION_ATTEMPTS, $temprestant);
+                    break;
+            }
+        }
+        $attempts++;
+        $item = $this->cache->getItem('login_attempts_' . $ip);
+        $expiration = $this->cache->getItem('expiration_' . $ip);
+
+        $expiration->set($time);
+        $this->cache->save($expiration);
+        $item->set($attempts);
+        $item->expiresAfter($interval);
+
+        $this->cache->save($item);
+    }
+
     public function generateError(string $errorType, string $variable = null): JsonResponse
     {
         $errorMessage = '';
         $codeErreur = '';
 
         switch ($errorType) {
-            case 'TooManyAttempts':
+            case 'TooManyConnectionAttempts':
                 $errorMessage = "Trop de tentatives de connexion (5 max). Veuillez réessayer ultérieurement : $variable minutes restantes.";
+                $codeErreur = 429;
+                break;
+            case 'TooManyPasswordAttempts':
+                $errorMessage = "Trop de demande de réinitialisation de mot de passe (3 max). Veuillez attendre avant de réessayer - $variable minutes restantes";
                 $codeErreur = 429;
                 break;
             case 'MissingAttributes':
                 $errorMessage = 'Une ou plusieurs données obligatoires sont manquantes.';
+                $codeErreur = 400;
+                break;
+            case 'MissingEmail':
+                $errorMessage = 'Email manquant.Veuiller fournir  votre email  pour la récupération du mot de passe.';
                 $codeErreur = 400;
                 break;
             case 'MissingAttributesLogin':
@@ -106,6 +158,9 @@ class ErrorManager
             case 'UserNotFound':
                 $errorMessage = 'Aucun utilisateur trouvé. Mot de passe ou identifiant incorrect.';
                 $codeErreur = 400;
+            case 'EmailNotFound':
+                $errorMessage = "Aucun compte n'est associé à cet email.Veuiller vérifier et réessayer.";
+                $codeErreur = 404;
                 break;
             case 'AccountNotActive':
                 $errorMessage = "Le compte n'est plus actif ou est suspendu.";
