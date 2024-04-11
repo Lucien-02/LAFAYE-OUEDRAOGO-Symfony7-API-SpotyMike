@@ -10,42 +10,44 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Album;
 use Symfony\Component\HttpFoundation\Request;
 use App\Entity\User;
+use App\Error\ErrorTypes;
+use App\Error\ErrorManager;
+use App\Success\SuccessManager;
+use Exception;
 
 class ArtistController extends AbstractController
 {
-
     private $repository;
     private $entityManager;
+    private $errorManager;
+    private $successManager;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager, SuccessManager $successManager)
     {
         $this->entityManager = $entityManager;
+        $this->errorManager = $errorManager;
+        $this->successManager = $successManager;
         $this->repository = $entityManager->getRepository(Artist::class);
     }
-
 
     #[Route('/artist/{id}', name: 'app_artist_delete', methods: ['DELETE'])]
     public function delete_artist_by_id(int $id): JsonResponse
     {
+        try {
+            $artist = $this->repository->find($id);
+            
+            $this->errorManager->checkNotFoundEntityId($artist, "Artiste");
 
-        $artist = $this->repository->find($id);
+            $this->entityManager->remove($artist);
+            $this->entityManager->flush();
 
-        if (!$artist) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Artiste introuvable',
-                'artist_id' => $id,
-            ],
-            404);
+            $this->successManager->validDeleteRequest("artiste");
+    
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        $this->entityManager->remove($artist);
-        $this->entityManager->flush();
-
-        return new JsonResponse([
-            'error' => false,
-            'message' => 'Votre profil artiste a été supprimé avec succès'
-        ]);
     }
 
     #[Route('/artist', name: 'post_artist', methods: 'POST')]
@@ -54,19 +56,14 @@ class ArtistController extends AbstractController
         try {
             parse_str($request->getContent(), $data);
 
-            //Donné manquante
-            if (!isset($data['fullname']) || !isset($data['user_id_user_id'])) {
-                return new JsonResponse([
-                    'error' => true,
-                    'message' => 'Une ou plusieurs données obligatoires sont manquantes'
-                ], 400);
-            }
+            //Données manquantes
+            $this->errorManager->checkRequiredAttributes($data, ['fullname', 'user_id_user_id']);
 
             //Vérification token
             if (False) {
                 return new JsonResponse([
                     'error' => true,
-                    'message' => "Votre token n'est pas correct"
+                    'message' => "Votre token n'est pas correct."
                 ], 401);
             }
 
@@ -74,39 +71,25 @@ class ArtistController extends AbstractController
             if (!is_string($data['fullname']) || !is_numeric($data['user_id_user_id'])) {
                 return new JsonResponse([
                     'error' => true,
-                    'message' => 'Une ou plusieurs données sont erronées',
+                    'message' => 'Une ou plusieurs données sont erronées.',
                     'data' => $data
                 ], 409);
             }
+            
             // Recherche d'un artiste avec le même nom dans la base de données
             $existingArtist = $this->entityManager->getRepository(Artist::class)->findOneBy(['fullname' => $data['fullname']]);
-            if ($existingArtist) {
-                return new JsonResponse([
-                    'error' => true,
-                    'message' => "Un compte utilisant ce nom d'artiste est déjà enregistré"
-                ], 409);
-            }
+            $this->errorManager->checkNotUniqueArtistName($existingArtist);
 
             //Recherche si le user est deja un artiste
             $user = $this->entityManager->getRepository(User::class)->find($data['user_id_user_id']);
 
-            if (!$user) {
-                return new JsonResponse([
-                    'error' => true,
-                    'message' => 'Utilisateur introuvable'
-                ], 404);
-            }
+            $this->errorManager->checkNotFoundEntityId($user, "Utilisateur");
+
             $artist = new Artist();
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $birthday = $user->getDateBirth();
-            $age = $birthday->diff($date)->y;
             //Vérification Age
-            if ($age < 16) {
-                return new JsonResponse([
-                    'error' => true,
-                    'message' => "Age minimum requis (16 ans)",
-                ], 401);
-            }
+            $this->errorManager->isAgeValid($birthday, 16);
 
             $artist->setFullname($data['fullname']);
             $artist->setUserIdUser($user);
@@ -119,95 +102,101 @@ class ArtistController extends AbstractController
             $this->entityManager->persist($artist);
             $this->entityManager->flush();
 
-            return new JsonResponse([
-                'sucess' => true,
-                'message' => "Votre compte d'artiste a été créé avec succès. Bienvenue dans notre communauté d'artistes !",
-                'artist_id' => $artist->getId()
-            ]);
+            $this->successManager->validPostRequest("Artiste");
 
-        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
-            // Renvoyer un message d'erreur indiquant que la donnée est déjà présente
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'La donnée que vous essayez d\'insérer existe déjà dans la base de données'
-            ], 409);
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
     }
 
     #[Route('/artist/{id}', name: 'app_artist_put', methods: ['PUT'])]
     public function putArtist(Request $request, int $id): JsonResponse
     {
-        $artist = $this->repository->find($id);
+        try {
+            $artist = $this->repository->find($id);
 
-        if (!$artist) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Artiste introuvable',
-                'artist_id' => $id,
-            ],
-            404);
+            $this->errorManager->checkNotFoundEntityId($artist, "Artiste");
+
+            parse_str($request->getContent(), $data);
+
+            if (isset($data['fullname'])) {
+                $artist->setFullname($data['fullname']);
+            }
+            if (isset($data['description'])) {
+                $artist->setDescription($data['description']);
+            }
+
+            $this->entityManager->persist($artist);
+            $this->entityManager->flush();
+
+            $this->successManager->validPutRequest("Artiste");
+        
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        parse_str($request->getContent(), $data);
-
-        if (isset($data['fullname'])) {
-            $artist->setFullname($data['fullname']);
-        }
-        if (isset($data['description'])) {
-            $artist->setDescription($data['description']);
-        }
-
-        $this->entityManager->persist($artist);
-        $this->entityManager->flush();
-
-        return new JsonResponse([
-            'error' => false,
-            'message' => 'Artiste mis à jour avec succès'
-        ]);
     }
 
     #[Route('/artist/', name: 'empty_artist', methods: ['GET'])]
     public function emptyArtist(): JsonResponse
     {
-        return $this->json([
-            "error" => true,
-            "message" => "Nom de l'artiste manquant",
-        ], 400);
+        try {
+            return $this->json([
+                "error" => true,
+                "message" => "Nom de l'artiste manquant",
+            ], 400);
+        
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        }
     }
+
     #[Route('/artist/all', name: 'app_artists_get', methods: ['GET'])]
     public function get_all_artists(): JsonResponse
     {
+        try {
+            $artists = $this->repository->findAll();
+            $artist_serialized = [];
+            foreach ($artists as $artist) {
+                array_push($artist_serialized, $artist->serializer());
+            }
+            $this->errorManager->checkNotFoundEntity($artists, "artiste");
 
-        $artists = $this->repository->findAll();
-        $artist_serialized = [];
-        foreach ($artists as $artist) {
+            return new JsonResponse($artist_serialized);
 
-            array_push($artist_serialized, $artist->serializer());
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-        if (!$artists) {
-            return $this->json([
-                'message' => 'Aucun utilisateur trouvé',
-            ], JsonResponse::HTTP_NOT_FOUND);
-        }
-
-        return new JsonResponse($artist_serialized);
     }
+
     #[Route('/artist/{fullname}', name: 'app_artist', methods: ['GET'])]
     public function get_artist_by_id(string $fullname): JsonResponse
     {
+        try {
+            $artist = $this->repository->findOneBy(['fullname' => $fullname]);
 
-        $artist = $this->repository->findOneBy(['fullname' => $fullname]);
+            if (!$artist) {
+                return $this->json([
+                    'error' => true,
+                    'message' => 'Une ou plusieurs données sont erronées.'
+                ], 409);
+            }
 
-        if (!$artist) {
             return $this->json([
-                'error' => true,
-                'message' => 'Une ou plusieurs données sont erronées'
+                $artist->serializer()
+            ]);
 
-            ], 409);
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        return $this->json([
-            $artist->serializer()
-        ]);
     }
 }

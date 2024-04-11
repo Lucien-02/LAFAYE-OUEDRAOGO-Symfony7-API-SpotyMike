@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Util;
+namespace App\Error;
 
 class ErrorTypes
 {
@@ -10,6 +10,8 @@ class ErrorTypes
     public const MISSING_EMAIL = 'MissingEmail';
     public const INVALID_EMAIL = 'InvalidEmail';
     public const INVALID_PASSWORD_FORMAT = 'InvalidPasswordFormat';
+    public const NOT_FOUND_ENTITY = 'NotFoundEntity';
+    public const NOT_FOUND_ENTITY_ID = 'NotFoundEntityId';
     public const USER_NOT_FOUND = 'UserNotFound';
     public const EMAIL_NOT_FOUND = 'EmailNotFound';
     public const ACCOUNT_NOT_ACTIVE = 'AccountNotActive';
@@ -19,4 +21,5 @@ class ErrorTypes
     public const INVALID_PHONE_NUMBER = 'InvalidPhoneNumber';
     public const INVALID_GENDER = 'InvalidGender';
     public const NOT_UNIQUE_EMAIL = 'NotUniqueEmail';
+    public const NOT_UNIQUE_ARTIST_NAME = 'NotUniqueArtistName';
 }

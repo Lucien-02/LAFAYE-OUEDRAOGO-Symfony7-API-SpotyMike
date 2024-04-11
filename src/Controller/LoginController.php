@@ -12,8 +12,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use App\Util\ErrorTypes;
-use App\Util\ErrorManager;
+use App\Error\ErrorTypes;
+use App\Error\ErrorManager;
 use Exception;
 
 
@@ -22,9 +22,7 @@ class LoginController extends  AbstractController
 {
     private $repository;
     private $cache;
-    private $errorManager;
     private $entityManager;
-
 
     public function __construct(EntityManagerInterface $entityManager, CacheItemPoolInterface $cache)
     {
@@ -42,7 +40,6 @@ class LoginController extends  AbstractController
             //recup l'ip
             $ip = $request->getClientIp();
             $errorManager->tooManyAttempts(5, 300, $ip, 'connection');
-
 
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire

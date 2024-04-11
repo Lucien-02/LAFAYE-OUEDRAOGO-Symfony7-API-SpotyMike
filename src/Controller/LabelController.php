@@ -8,136 +8,140 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Error\ErrorTypes;
+use App\Error\ErrorManager;
+use App\Success\SuccessManager;
+use Exception;
 
 class LabelController extends AbstractController
 {
     private $repository;
     private $entityManager;
+    private $errorManager;
+    private $successManager;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager, SuccessManager $successManager)
     {
         $this->entityManager = $entityManager;
+        $this->errorManager = $errorManager;
+        $this->successManager = $successManager;
         $this->repository = $entityManager->getRepository(Label::class);
     }
 
-    #[Route('/labels', name: 'app_labels_get_all', methods: 'GET')]
+    #[Route('/label/all', name: 'app_labels_get_all', methods: 'GET')]
     public function getLabels()
     {
-        $labels = $this->repository->findAll();
+        try {
+            $labels = $this->repository->findAll();
 
-        if (!$labels) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Aucun label trouvé"
-            ],
-            404);
+            $this->errorManager->checkNotFoundEntity($labels, "label");
+
+            $serializedLabels = [];
+            foreach ($labels as $label) {
+                $serializedLabels[] = [
+                    'id' => $label->getId(),
+                    'nom' => $label->getNom()
+                ];
+            }
+
+            return new JsonResponse($serializedLabels);
+
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        $serializedLabels = [];
-        foreach ($labels as $label) {
-            $serializedLabels[] = [
-                'id' => $label->getId(),
-                'nom' => $label->getNom()
-            ];
-        }
-
-        return new JsonResponse($serializedLabels);
     }
 
     #[Route('/label/{id}', name: 'app_label_get', methods: 'GET')]
     public function getLabel(int $id): JsonResponse
     {
-        $label = $this->repository->find($id);
+        try {
+            $label = $this->repository->find($id);
 
-        if (!$label) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Label introuvable",
-                'label_id' => $id,
-            ], 404);
+            $this->errorManager->checkNotFoundEntityId($label, 'Label');
+
+            return $this->json([
+                'id' => $label->getId(),
+                'nom' => $label->getNom()
+            ]);
+            
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        return $this->json([
-            'id' => $label->getId(),
-            'nom' => $label->getNom()
-        ]);
     }
 
     #[Route('/label', name: 'app_label_post', methods: 'POST')]
     public function postLabel(Request $request): JsonResponse
     {
-        parse_str($request->getContent(), $data);
+        try {
+            parse_str($request->getContent(), $data);
 
-        if (!isset($data['nom']) || !isset($data['create_at'])) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Une ou plusieurs données obligatoires sont manquantes'
-            ], 
-            400);
+            $this->errorManager->checkRequiredAttributes($data, ['nom']);
+
+            $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            $label = new Label();
+            $label->setNom($data['nom']);
+            $label->setCreateAt($date);
+            $label->setUpdateAt($date);
+
+            $this->entityManager->persist($label);
+            $this->entityManager->flush();
+
+            $this->successManager->validPostRequest("Label");
+
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-        $label = new Label();
-        $label->setNom($data['nom']);
-        $label->setCreateAt($date);
-        $label->setUpdateAt($date);
-
-        $this->entityManager->persist($label);
-        $this->entityManager->flush();
-
-        return new JsonResponse([
-            'error' => false,
-            'message' => 'Label ajouté avec succès',
-            'id' => $label->getId()
-        ]);
     }
 
     #[Route('/label/{id}', name: 'app_label_put', methods: 'PUT')]
     public function putLabel(Request $request, int $id): JsonResponse
     {
-        $label = $this->repository->find($id);
+        try {
+            $label = $this->repository->find($id);
 
-        if (!$label) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Label introuvable",
-                'label_id' => $id,
-            ], 404);
+            $this->errorManager->checkNotFoundEntityId($label, 'Label');
+
+            parse_str($request->getContent(), $data);
+
+            if (isset($data['nom'])) {
+                $label->setNom($data['nom']);
+            }
+
+            $this->entityManager->persist($label);
+            $this->entityManager->flush();
+
+            $this->successManager->validPutRequest("Label");
+
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-        parse_str($request->getContent(), $data);
-
-        if (isset($data['nom'])) {
-            $label->setNom($data['nom']);
-        }
-
-        $this->entityManager->persist($label);
-        $this->entityManager->flush();
-
-        return new JsonResponse([
-            'error' => false,
-            'message' => 'Label mis à jour avec succès'
-        ]);
     }
 
     #[Route('/label/{id}', name: 'app_label_delete', methods: 'DELETE')]
     public function deleteLabel(int $id): JsonResponse
     {
-        $label = $this->repository->find($id);
+        try {
+            $label = $this->repository->find($id);
 
-        if (!$label) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Label introuvable",
-                'label_id' => $id,
-            ], 404);
+            $this->errorManager->checkNotFoundEntityId($label, 'Label');
+
+            $this->entityManager->remove($label);
+            $this->entityManager->flush();
+
+            $this->successManager->validDeleteRequest("label");
+            
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        $this->entityManager->remove($label);
-        $this->entityManager->flush();
-
-        return new JsonResponse([
-            'error' => false,
-            'message' => 'Votre label a été supprimé avec succès'
-        ]);
     }
 }

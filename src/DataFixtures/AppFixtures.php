@@ -38,7 +38,7 @@ class AppFixtures extends Fixture
             $user->setDateBirth(new DateTimeImmutable());
             $user->setCreateAt(new DateTimeImmutable());
             $user->setUpdateAt(new DateTimeImmutable());
-            $hash = $this->hasher->hashPassword($user, "User_" . $i);
+            $hash = $this->hasher->hashPassword($user, "TestUser_" . $i);
             $user->setPassword($hash);
             $manager->persist($user);
             $manager->flush();
