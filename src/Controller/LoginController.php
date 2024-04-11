@@ -12,8 +12,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use App\Util\ErrorTypes;
-use App\Util\ErrorManager;
+use App\Error\ErrorTypes;
+use App\Error\ErrorManager;
 use Exception;
 
 
@@ -22,9 +22,7 @@ class LoginController extends  AbstractController
 {
     private $repository;
     private $cache;
-    private $errorManager;
     private $entityManager;
-
 
     public function __construct(EntityManagerInterface $entityManager, CacheItemPoolInterface $cache)
     {
@@ -65,7 +63,6 @@ class LoginController extends  AbstractController
             $item->expiresAfter($interval);
 
             $this->cache->save($item);
-
 
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire

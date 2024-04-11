@@ -9,72 +9,78 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Util\ErrorTypes;
-use App\Util\ErrorManager;
+use App\Error\ErrorTypes;
+use App\Error\ErrorManager;
+use App\Success\SuccessManager;
 use Exception;
 
 class UserController extends AbstractController
 {
     private $repository;
     private $entityManager;
+    private $errorManager;
+    private $successManager;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager, SuccessManager $successManager)
     {
         $this->entityManager = $entityManager;
+        $this->errorManager = $errorManager;
+        $this->successManager = $successManager;
         $this->repository = $entityManager->getRepository(User::class);
     }
 
     #[Route('/user', name: 'app_users_get_all', methods: 'GET')]
     public function getUsers(): JsonResponse
     {
-        $users = $this->repository->findAll();
+        try {
+            $users = $this->repository->findAll();
 
-        if (!$users) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Aucun utilisateur trouvé",
-            ], 404);
+            $this->errorManager->checkNotFoundEntity($users, "utilisateur");
+
+            $serializedUsers = [];
+            foreach ($users as $user) {
+                $serializedUsers[] = [
+                    'id' => $user->getId(),
+                    'name' => $user->getFirstname(),
+                    'encrypt' => $user->getPassword(),
+                    'mail' => $user->getEmail(),
+                    'tel' => $user->getTel(),
+                    'birthday' => $user->getDateBirth()
+                ];
+            }
+            return new JsonResponse($serializedUsers);
+
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        $serializedUsers = [];
-        foreach ($users as $user) {
-            $serializedUsers[] = [
-                'id' => $user->getId(),
-                'name' => $user->getFirstname(),
-                'encrypt' => $user->getPassword(),
-                'mail' => $user->getEmail(),
-                'tel' => $user->getTel(),
-                'birthday' => $user->getDateBirth()
-            ];
-        }
-
-        return new JsonResponse($serializedUsers);
     }
 
     #[Route('/user/{id}', name: 'app_user_get', methods: 'GET')]
     public function getUserById(int $id)
     {
-        $user = $this->repository->find($id);
+        try {
+            $user = $this->repository->find($id);
 
-        if (!$user) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Utilisateur introuvable",
-                'user_id' => $id,
-            ], 404);
+            $this->errorManager->checkNotFoundEntityId($user, "Utilisateur");
+
+            return $this->json($user->serializer());
+        
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        return $this->json($user->serializer());
     }
 
     #[Route('/register', name: 'app_register', methods: 'POST')]
-    public function register(Request $request, ErrorManager $errorManager, UserPasswordHasherInterface $passwordHash): JsonResponse
+    public function register(Request $request, UserPasswordHasherInterface $passwordHash): JsonResponse
     {
         try {
-
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire
-            $errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth']);
+            $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth']);
             $firstname = $data['firstname'];
             $lastname = $data['lastname'];
             $email = $data['email'];
@@ -89,29 +95,29 @@ class UserController extends AbstractController
             $ageMin = 12;
             // vérif format mail
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return $errorManager->generateError(ErrorTypes::INVALID_EMAIL);
+                return $this->errorManager->generateError(ErrorTypes::INVALID_EMAIL);
             }
 
             // vérif format mdp
-            $errorManager->isValidPassword($password);
+            $this->errorManager->isValidPassword($password);
             // vérif format date
-            $errorManager->isValidDateFormat($birthday, 'd/m/Y');
+            $this->errorManager->isValidDateFormat($birthday, 'd/m/Y');
             // vérif age
-            $errorManager->isAgeValid($birthday, 12);
+            $this->errorManager->isAgeValid($birthday, 12);
 
             //vérif tel
             if (isset($data['tel'])) {
-                $errorManager->isValidPhoneNumber($phoneNumber);
+                $this->errorManager->isValidPhoneNumber($phoneNumber);
             }
 
             //vérif sexe
             if (isset($data['sexe'])) {
-                $errorManager->isValidGender($sexe);
+                $this->errorManager->isValidGender($sexe);
             }
 
             //vérif email unique
             if ($this->repository->findOneByEmail($email)) {
-                return $errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
+                return $this->errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
             }
 
             $user = new User();
@@ -119,7 +125,6 @@ class UserController extends AbstractController
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $user->setCreateAt($date);
             $user->setUpdateAt($date);
-
 
             $user->setFirstname($firstname);
             $user->setLastname($lastname);
@@ -134,91 +139,88 @@ class UserController extends AbstractController
             $this->entityManager->persist($user);
             $this->entityManager->flush();
 
-            return new JsonResponse([
-                'error' => false,
-                'message' => "L'utilisateur a été créé avec succès",
-                'user' => $user->serializer(),
-
+            return $this->json([
+                $user->serializer()
             ]);
+
+            $this->successManager->validPostRequest("Utilisateur");
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-            return $errorManager->generateError($exception->getMessage(), $exception->getCode());
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
     }
 
     #[Route('/user/{id}', name: 'app_user_put', methods: 'PUT')]
     public function putUser(Request $request, int $id): JsonResponse
     {
-        $user = $this->repository->find($id);
+        try {
+            $user = $this->repository->find($id);
 
-        if (!$user) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Utilisateur introuvable",
-                'user_id' => $id,
-            ], 404);
-        }
-        parse_str($request->getContent(), $data);
+            $this->errorManager->checkNotFoundEntityId($user, "Utilisateur");
+            
+            parse_str($request->getContent(), $data);
 
-        $email = $data['email'];
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return new JsonResponse([
-                'error' => 'Adresse email invalide',
-                'email' => $email
-            ], JsonResponse::HTTP_BAD_REQUEST);
-        }
-        $existingUser = $this->repository->findOneByEmail($data['email']);
-        if ($existingUser !== null) {
-            return new JsonResponse([
-                'error' => 'Cet email existe déjà',
-                'email' => $data['email']
-            ], JsonResponse::HTTP_CONFLICT);
-        }
+            $email = $data['email'];
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return new JsonResponse([
+                    'error' => 'Adresse email invalide',
+                    'email' => $email
+                ], JsonResponse::HTTP_BAD_REQUEST);
+            }
+            $existingUser = $this->repository->findOneByEmail($data['email']);
+            if ($existingUser !== null) {
+                return new JsonResponse([
+                    'error' => 'Cet email existe déjà',
+                    'email' => $data['email']
+                ], JsonResponse::HTTP_CONFLICT);
+            }
 
-        if (isset($data['name'])) {
-            $user->setName($data['name']);
-        }
-        if (isset($data['email'])) {
-            $user->setEmail($data['email']);
-        }
-        if (isset($data['tel'])) {
-            $user->setTel($data['tel']);
-        }
-        if (isset($data['encrypte'])) {
-            $user->setPassword($data['encrypte']);
-        }
-        $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-        $user->setUpdateAt($date);
+            if (isset($data['name'])) {
+                $user->setName($data['name']);
+            }
+            if (isset($data['email'])) {
+                $user->setEmail($data['email']);
+            }
+            if (isset($data['tel'])) {
+                $user->setTel($data['tel']);
+            }
+            if (isset($data['encrypte'])) {
+                $user->setPassword($data['encrypte']);
+            }
+            $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            $user->setUpdateAt($date);
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
 
-        return new JsonResponse([
-            'error' => false,
-            'message' => "Utilisateur mis à jour avec succès"
-        ]);
+            $this->successManager->validPutRequest("Utilisateur");
+        
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        }
     }
 
     #[Route('/user/{id}', name: 'app_user_delete', methods: 'DELETE')]
     public function deleteUser(int $id): JsonResponse
     {
-        $user = $this->repository->find($id);
+        try {
+            $user = $this->repository->find($id);
 
-        if (!$user) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Utilisateur introuvable",
-                'user_id' => $id,
-            ], 404);
+            $this->errorManager->checkNotFoundEntityId($user, "Utilisateur");
+
+            $this->entityManager->remove($user);
+            $this->entityManager->flush();
+
+            $this->successManager->validDeleteRequest("utilisateur");
+        
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        $this->entityManager->remove($user);
-        $this->entityManager->flush();
-
-        return new JsonResponse([
-            'error' => false,
-            'message' => "Votre utilisateur a été supprimé avec succès"
-        ]);
     }
 }
