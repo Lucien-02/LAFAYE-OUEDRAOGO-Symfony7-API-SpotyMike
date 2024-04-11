@@ -29,13 +29,13 @@ class SongController extends AbstractController
         $this->successManager = $successManager;
     }
 
-    #[Route('/song', name: 'app_songs_get_all', methods: 'GET')]
+    #[Route('/song/all', name: 'app_songs_get_all', methods: 'GET')]
     public function getSongs()
     {
         try {
             $songs = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($songs);
+            $this->errorManager->checkNotFoundEntity($songs, "son");
 
             $serializedSongs = [];
             foreach ($songs as $song) {
