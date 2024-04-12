@@ -61,7 +61,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Artist::class, inversedBy: 'Followers')]
     private Collection $Follow;
 
-    #[ORM\OneToMany(targetEntity: playlist::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: playlist::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     private Collection $playlists;
 
     public function __construct()
