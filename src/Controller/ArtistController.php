@@ -33,7 +33,8 @@ class ArtistController extends AbstractController
     #[Route('/artist', name: 'app_artist_delete', methods: ['DELETE'])]
     public function delete_artist(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
-
+        $decodedtoken = $JWTManager->decode($token);
+        $this->errorManager->Tokennotreset($decodedtoken);
         $decodedtoken = $JWTManager->decode($token);
         $email =  $decodedtoken['username'];
         $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
@@ -60,11 +61,12 @@ class ArtistController extends AbstractController
     }
 
     #[Route('/artist', name: 'post_artist', methods: 'POST')]
-    public function post_artist(Request $request): JsonResponse
+    public function post_artist(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             parse_str($request->getContent(), $data);
-
+            $decodedtoken = $JWTManager->decode($token);
+            $this->errorManager->Tokennotreset($decodedtoken);
             //Données manquantes
             $this->errorManager->checkRequiredAttributes($data, ['fullname', 'user_id_user_id']);
 
@@ -124,7 +126,7 @@ class ArtistController extends AbstractController
     }
 
     #[Route('/artist/{id}', name: 'app_artist_put', methods: ['PUT'])]
-    public function putArtist(Request $request, int $id): JsonResponse
+    public function putArtist(Request $request, int $id, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             $artist = $this->repository->find($id);
@@ -132,7 +134,8 @@ class ArtistController extends AbstractController
             $this->errorManager->checkNotFoundArtistId($artist);
 
             parse_str($request->getContent(), $data);
-
+            $decodedtoken = $JWTManager->decode($token);
+            $this->errorManager->Tokennotreset($decodedtoken);
             if (isset($data['fullname'])) {
                 $artist->setFullname($data['fullname']);
             }
@@ -158,9 +161,11 @@ class ArtistController extends AbstractController
 
 
     #[Route('/artist', name: 'app_artists_get', methods: ['GET'])]
-    public function get_all_artists(): JsonResponse
+    public function get_all_artists(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
+            $decodedtoken = $JWTManager->decode($token);
+            $this->errorManager->Tokennotreset($decodedtoken);
             $artists = $this->repository->findAll();
             $artist_serialized = [];
             foreach ($artists as $artist) {
@@ -210,6 +215,7 @@ class ArtistController extends AbstractController
             $email = $artist->getUserIdUser()->getEmail();
             $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             $decodedtoken = $JWTManager->decode($token);
+            $this->errorManager->Tokennotreset($decodedtoken);
             $email =  $decodedtoken['username'];
             $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 

@@ -18,6 +18,13 @@ class ErrorManager
         $this->cache = $cache;
     }
 
+    public function Tokennotreset(array $decodedtoken)
+    {
+        if ($decodedtoken['type'] == 'reset-password') {
+            throw new Exception(ErrorTypes::TOKEN_INVALID_MISSING);
+        }
+    }
+
     public function isValidDateFormat(string $dateString, string $expectedFormat)
     {
         $date = \DateTime::createFromFormat($expectedFormat, $dateString);
