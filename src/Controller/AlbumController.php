@@ -11,7 +11,6 @@ use App\Entity\Artist;
 use Symfony\Component\HttpFoundation\Request;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
-use App\Success\SuccessManager;
 use Exception;
 
 class AlbumController extends AbstractController
@@ -19,13 +18,12 @@ class AlbumController extends AbstractController
     private $repository;
     private $entityManager;
     private $errorManager;
-    private $successManager;
 
-    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager, SuccessManager $successManager)
+    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager)
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        $this->successManager = $successManager;
+        
         $this->repository = $entityManager->getRepository(Album::class);
     }
 
@@ -35,12 +33,15 @@ class AlbumController extends AbstractController
         try {
             $album = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($album, 'album');
+            $this->errorManager->checkNotFoundEntityId($album);
 
             $this->entityManager->remove($album);
             $this->entityManager->flush();
 
-            $this->successManager->validDeleteRequest("album");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Votre album a été supprimé avec succès."
+            ]);
             
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -72,7 +73,10 @@ class AlbumController extends AbstractController
             $this->entityManager->persist($album);
             $this->entityManager->flush();
 
-            $this->successManager->validPostRequest("Album");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Album créé avec succès."
+            ]);
     
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -110,7 +114,10 @@ class AlbumController extends AbstractController
             $this->entityManager->persist($album);
             $this->entityManager->flush();
 
-            $this->successManager->validPutRequest("Album");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Album mis à jour avec succès."
+            ]);
     
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
