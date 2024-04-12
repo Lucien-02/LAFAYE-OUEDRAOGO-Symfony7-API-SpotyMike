@@ -65,7 +65,6 @@ class LoginController extends  AbstractController
                 return $errorManager->generateError("AccountNotActive");
             }
             */
-            dd($passwordHash->isPasswordValid($user, $password));
             if ($passwordHash->isPasswordValid($user, $password)) {
                 $token = $JWTManager->create($user);
                 return new JsonResponse([

@@ -76,12 +76,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
-    public function getIdUser(): ?int
+    public function getIdUser(): ?string
     {
         return $this->idUser;
     }
 
-    public function setIdUser(int $idUser): static
+    public function setIdUser(string $idUser): static
     {
         $this->idUser = $idUser;
 

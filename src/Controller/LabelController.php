@@ -65,7 +65,7 @@ class LabelController extends AbstractController
                 'id' => $label->getId(),
                 'nom' => $label->getNom()
             ]);
-            
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -137,7 +137,7 @@ class LabelController extends AbstractController
             $this->entityManager->flush();
 
             $this->successManager->validDeleteRequest("label");
-            
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {

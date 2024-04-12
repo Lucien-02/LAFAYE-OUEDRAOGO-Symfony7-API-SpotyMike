@@ -37,13 +37,13 @@ class ErrorManager
     }
     public function checkNotFoundEntity(array $entity, string $entityName)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ENTITY, $entityName);
         }
     }
     public function checkNotFoundEntityId(object $entity, string $entityName)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ENTITY_ID, $entityName);
         }
     }
@@ -190,11 +190,10 @@ class ErrorManager
                 $codeErreur = 409;
                 break;
             case 'NotFoundEntity':
-                if ($variable == "playlist"){
+                if ($variable == "playlist") {
                     $errorMessage = "Aucune $variable trouvée.";
                     $codeErreur = 404;
-                }
-                else {
+                } else {
                     $errorMessage = "Aucun $variable trouvé.";
                     $codeErreur = 404;
                 }
