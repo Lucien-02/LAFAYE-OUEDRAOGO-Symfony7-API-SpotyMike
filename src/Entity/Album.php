@@ -192,10 +192,10 @@ class Album
         }
 
         return [
-            "error" => false,
             "id" => $this->getId(),
             "nom" => $this->getNom(),
             "categ" => $this->getCateg(),
+            // "label" => $this->getCateg(),
             "cover" => $this->getCover(),
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),

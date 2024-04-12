@@ -151,13 +151,12 @@ class Artist
         }
 
         return [
-            "error" => false,
             "firstname" => $this->getUserIdUser()->getFirstname(),
             "lastname" => $this->getUserIdUser()->getLastname(),
             "sexe" => $this->getUserIdUser()->getSexe(),
             "dateBirth" => $this->getUserIdUser()->getDateBirth()->format('Y-m-d H:i:s'),
             "Artist.createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
-            "album" => $albumsData,
+            "albums" => $albumsData,
         ];
     }
 
