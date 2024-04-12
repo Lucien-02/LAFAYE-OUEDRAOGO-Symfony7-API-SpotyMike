@@ -117,6 +117,14 @@ class ErrorManager
             }
         }
     }
+    public function checkRequiredLoginAttributes(array $data, array $requiredAttributes)
+    {
+        foreach ($requiredAttributes as $attribute) {
+            if (!isset($data[$attribute])) {
+                throw new Exception(ErrorTypes::MISSING_ATTRIBUTES_LOGIN);
+            }
+        }
+    }
     public  function isAgeValid(string $dateOfBirth, int $minimumAge)
     {
         $today = new \DateTime();
@@ -209,7 +217,7 @@ class ErrorManager
                 $codeErreur = 400;
                 break;
             case 'MissingAttributesLogin':
-                $errorMessage = 'Email ou password manquant.';
+                $errorMessage = 'Email/password manquants.';
                 $codeErreur = 400;
                 break;
             case 'InvalidEmail':
@@ -306,6 +314,10 @@ class ErrorManager
             case 'NotUniqueArtistName':
                 $errorMessage = "Ce nom d'artiste est déjà pris. Veuillez en choisir un autre.";
                 $codeErreur = 409;
+                break;
+            case 'NotActiveUser':
+                $errorMessage = "Le compte n'est plus actif ou est suspendu.";
+                $codeErreur = 403;
                 break;
             case 'TokenInvalidMissing':
                 $errorMessage = "Token de réinitialisation  manquant  ou invalide .Veuiller utiliser le lien fourni dans l'email de reinitialisation de mot de passe";
