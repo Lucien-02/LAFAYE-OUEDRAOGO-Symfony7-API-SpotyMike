@@ -37,13 +37,13 @@ class ErrorManager
     }
     public function checkNotFoundEntity(array $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ENTITY);
         }
     }
     public function checkNotFoundEntityId(object $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ENTITY_ID);
         }
     }
@@ -212,6 +212,10 @@ class ErrorManager
             case 'TokenPasswordExpire':
                 $errorMessage = "Votre token de réinitialisation de mot de passe a expiré.Veuiller refaire une demande de reinitialisation de mot de passe.";
                 $codeErreur = 400;
+                break;
+            case 'AccountAlreadyDesactivate':
+                $errorMessage = "Le compte est déja désactivé.";
+                $codeErreur = 409;
                 break;
             default:
                 $errorMessage = 'Erreur inconnue.';
