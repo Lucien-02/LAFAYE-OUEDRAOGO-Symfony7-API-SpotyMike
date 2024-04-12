@@ -150,7 +150,8 @@ class UserController extends AbstractController
 
             return new JsonResponse([
                 'error' => false,
-                'message' => "Utilisateur créé avec succès."
+                'message' => "L'utilisateur a bien été créé avec succès.",
+                'user' => $user->serializer()
             ]);
 
             // Gestion des erreurs inattendues
@@ -161,17 +162,14 @@ class UserController extends AbstractController
     }
 
 
-    #[Route('/user/{id}', name: 'app_user_put', methods: 'PUT')]
-    public function putUser(Request $request, int $id): JsonResponse
+    #[Route('/user', name: 'app_user_post', methods: 'POST')]
+    public function postUser(Request $request): JsonResponse
     {
         try {
-            $user = $this->repository->find($id);
-
-
-            $this->errorManager->checkNotFoundUserId($user);
-
             parse_str($request->getContent(), $data);
 
+            $user = new User();
+            
             $email = $data['email'];
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return new JsonResponse([
@@ -187,8 +185,11 @@ class UserController extends AbstractController
                 ], JsonResponse::HTTP_CONFLICT);
             }
 
-            if (isset($data['name'])) {
-                $user->setName($data['name']);
+            if (isset($data['firstname'])) {
+                $user->setFirstname($data['firstname']);
+            }
+            if (isset($data['lastname'])) {
+                $user->setLastname($data['lastname']);
             }
             if (isset($data['email'])) {
                 $user->setEmail($data['email']);
@@ -207,7 +208,7 @@ class UserController extends AbstractController
 
             return new JsonResponse([
                 'error' => false,
-                'message' => "Utilisateur mis à jour avec succès."
+                'message' => "Votre inscription a bien été prise en compte."
             ]);
 
             // Gestion des erreurs inattendues
@@ -258,8 +259,8 @@ class UserController extends AbstractController
             $this->entityManager->flush();
 
             return new JsonResponse([
-                'error' => false,
-                'message' => "Votre compte  a été  désactiver avec succès.Nous sommes désolés de vus voir partir."
+                'success' => true,
+                'message' => "Votre compte a été désactivé avec succès. Nous sommes désolés de vous voir partir."
             ]);
 
             // Gestion des erreurs inattendues
