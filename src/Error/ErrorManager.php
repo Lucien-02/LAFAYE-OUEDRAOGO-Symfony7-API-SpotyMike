@@ -37,13 +37,13 @@ class ErrorManager
     }
     public function checkNotFoundEntity(array $entity, string $entityName)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ENTITY, $entityName);
         }
     }
     public function checkNotFoundEntityId(object $entity, string $entityName)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ENTITY_ID, $entityName);
         }
     }
@@ -142,6 +142,10 @@ class ErrorManager
                 $errorMessage = 'Email manquant.Veuiller fournir  votre email  pour la récupération du mot de passe.';
                 $codeErreur = 400;
                 break;
+            case 'MissingPassword':
+                $errorMessage = 'Veuiller fournir un nouveaux mot de passe.';
+                $codeErreur = 400;
+                break;
             case 'MissingAttributesLogin':
                 $errorMessage = 'Email ou password manquant.';
                 $codeErreur = 400;
@@ -190,11 +194,10 @@ class ErrorManager
                 $codeErreur = 409;
                 break;
             case 'NotFoundEntity':
-                if ($variable == "playlist"){
+                if ($variable == "playlist") {
                     $errorMessage = "Aucune $variable trouvée.";
                     $codeErreur = 404;
-                }
-                else {
+                } else {
                     $errorMessage = "Aucun $variable trouvé.";
                     $codeErreur = 404;
                 }
@@ -206,6 +209,14 @@ class ErrorManager
             case 'NotUniqueArtistName':
                 $errorMessage = "Ce nom d'artiste est déjà pris. Veuillez en choisir un autre.";
                 $codeErreur = 409;
+                break;
+            case 'TokenInvalidMissing':
+                $errorMessage = "Token de réinitialisation  manquant  ou invalide .Veuiller utiliser le lien fourni dans l'email de reinitialisation de mot de passe";
+                $codeErreur = 400;
+                break;
+            case 'TokenPasswordExpire':
+                $errorMessage = "Votre token de réinitialisation de mot de passe a expiré.Veuiller refaire une demande de reinitialisation de mot de passe.";
+                $codeErreur = 400;
                 break;
             default:
                 $errorMessage = 'Erreur inconnue.';

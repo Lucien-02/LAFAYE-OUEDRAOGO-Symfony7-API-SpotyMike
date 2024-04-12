@@ -15,22 +15,22 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
-    
+
     private UserPasswordHasherInterface $hasher;
 
     public function __construct(UserPasswordHasherInterface $hasher)
     {
         $this->hasher = $hasher;
     }
-    
+
     public function load(ObjectManager $manager): void
     {
         for ($i = 1; $i < 8; $i++) {
-            
+
             // Add New User
             $user = new User;
-            $user->setIdUser($i);
-            $sexe = rand(0, 1) === 0 ? "Homme" : "Femme";
+            $user->setIdUser(uniqid());
+            $sexe = rand(0, 1) === 0 ? 0 : 1;
             $user->setSexe($sexe);
             $user->setFirstname("User_" . $i);
             $user->setLastname("User_" . $i);
@@ -42,7 +42,7 @@ class AppFixtures extends Fixture
             $user->setPassword($hash);
             $manager->persist($user);
             $manager->flush();
-                
+
             // Add New Artist
             $artist = new Artist;
             $artist->setFullname("Artist_" . $i);
@@ -57,7 +57,7 @@ class AppFixtures extends Fixture
             $label = new Label;
             $label->setNom("Label_" . $i);
             $label->setCreateAt(new DateTimeImmutable());
-            $label->setUpdateAt(new DateTimeImmutable());  
+            $label->setUpdateAt(new DateTimeImmutable());
             $manager->persist($label);
             $manager->flush();
 
@@ -93,10 +93,9 @@ class AppFixtures extends Fixture
             $playlist->setTitle("Playlist_" . $i);
             $playlist->setPublic(rand(0, 1));
             $playlist->setCreateAt(new DateTimeImmutable());
-            $playlist->setUpdateAt(new DateTimeImmutable()); 
+            $playlist->setUpdateAt(new DateTimeImmutable());
             $manager->persist($playlist);
             $manager->flush();
-
         }
     }
 }
