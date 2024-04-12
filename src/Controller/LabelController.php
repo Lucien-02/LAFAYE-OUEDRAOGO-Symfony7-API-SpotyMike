@@ -3,15 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Label;
+use App\Util\ErrorTypes;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Error\ErrorTypes;
-use App\Error\ErrorManager;
-use App\Success\SuccessManager;
-use Exception;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 class LabelController extends AbstractController
 {
@@ -44,13 +43,17 @@ class LabelController extends AbstractController
                 ];
             }
 
-            return new JsonResponse($serializedLabels);
-
-            // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        $decodedtoken = $JWTManager->decode($token);
+        if ($decodedtoken['type'] == 'reset-password') {
+            return new JsonResponse(
+                [
+                    'error' => true,
+                    'message' => 'ca passe pas brother'
+                ],
+                404
+            );
         }
+        return new JsonResponse($serializedLabels);
     }
 
     #[Route('/label/{id}', name: 'app_label_get', methods: 'GET')]

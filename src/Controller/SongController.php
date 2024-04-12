@@ -153,7 +153,7 @@ class SongController extends AbstractController
             $this->entityManager->flush();
 
             $this->successManager->validPutRequest("Son");
-        
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
