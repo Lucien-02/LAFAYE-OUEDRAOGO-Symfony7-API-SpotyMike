@@ -115,10 +115,9 @@ class LoginController extends  AbstractController
                 );
                 //$token = $JWTManager->create($email_found, [], ['type' => 'reset_password']);
                 return new JsonResponse([
-                    'error' => false,
+                    'success' => true,
                     'token' => $token,
-                    'message' => "Un email de réinitialisation de mot de passe a été envoyé à votre adresse email.Veuiller suivre les instructions contenues dans l'email pour réinitialiser votre mot de passe.",
-
+                    'message' => "Un email de réinitialisation de mot de passe a été envoyé à votre adresse email. Veuiller suivre les instructions contenues dans l'email pour réinitialiser votre mot de passe.",
                 ]);
             }
             // Gestion des erreurs inattendues
@@ -177,9 +176,8 @@ class LoginController extends  AbstractController
 
 
             return new JsonResponse([
-                'error' => false,
-                'message' => "Votre mot de passe a été reinitialise avec succès vous pouvez maintenant  vous connecter  avec votre  nouveau mmot de passe.",
-
+                'success' => true,
+                'message' => "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
             ]);
 
 

@@ -150,7 +150,8 @@ class UserController extends AbstractController
 
             return new JsonResponse([
                 'error' => false,
-                'message' => "Utilisateur créé avec succès."
+                'message' => "L'utilisateur a bien été créé avec succès.",
+                'user' => $user->serializer()
             ]);
 
             // Gestion des erreurs inattendues
@@ -161,55 +162,63 @@ class UserController extends AbstractController
     }
 
 
-    #[Route('/user/{id}', name: 'app_user_put', methods: 'PUT')]
-    public function putUser(Request $request, int $id): JsonResponse
+    #[Route('/user', name: 'app_user_post', methods: 'POST')]
+    public function postUser(TokenInterface $token, Request $request, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
-            $user = $this->repository->find($id);
-
-
-            $this->errorManager->checkNotFoundUserId($user);
-
+            $decodedtoken = $JWTManager->decode($token);
+            $email = $decodedtoken['username'];
+            $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             parse_str($request->getContent(), $data);
-
-            $email = $data['email'];
+            
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return new JsonResponse([
                     'error' => 'Adresse email invalide',
                     'email' => $email
                 ], JsonResponse::HTTP_BAD_REQUEST);
             }
-            $existingUser = $this->repository->findOneByEmail($data['email']);
-            if ($existingUser !== null) {
-                return new JsonResponse([
-                    'error' => 'Cet email existe déjà',
-                    'email' => $data['email']
-                ], JsonResponse::HTTP_CONFLICT);
+            if (isset($data['email'])) {
+                $existingUser = $this->repository->findOneByEmail($email);
+                if ($existingUser !== null) {
+                    return new JsonResponse([
+                        'error' => 'Cet email existe déjà',
+                        'email' => $email
+                    ], JsonResponse::HTTP_CONFLICT);
+                }
             }
-
-            if (isset($data['name'])) {
-                $user->setName($data['name']);
+            
+            if (isset($data['id_user'])) {
+                $request_user->setIdUser($data['id_user']);
+            }
+            if (isset($data['firstname'])) {
+                $request_user->setFirstname($data['firstname']);
+            }
+            if (isset($data['lastname'])) {
+                $request_user->setLastname($data['lastname']);
             }
             if (isset($data['email'])) {
-                $user->setEmail($data['email']);
+                $request_user->setEmail($data['email']);
+            }
+            if (isset($data['sexe'])) {
+                $request_user->setSexe($data['sexe']);
             }
             if (isset($data['tel'])) {
-                $user->setTel($data['tel']);
+                $request_user->setTel($data['tel']);
             }
             if (isset($data['encrypte'])) {
-                $user->setPassword($data['encrypte']);
+                $request_user->setPassword($data['encrypte']);
             }
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-            $user->setUpdateAt($date);
+            $request_user->setUpdateAt($date);
 
-            $this->entityManager->persist($user);
+            $this->entityManager->persist($request_user);
             $this->entityManager->flush();
 
             return new JsonResponse([
                 'error' => false,
-                'message' => "Utilisateur mis à jour avec succès."
+                'message' => "Votre inscription a bien été prise en compte."
             ]);
-
+            
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -258,8 +267,8 @@ class UserController extends AbstractController
             $this->entityManager->flush();
 
             return new JsonResponse([
-                'error' => false,
-                'message' => "Votre compte  a été  désactiver avec succès.Nous sommes désolés de vus voir partir."
+                'success' => true,
+                'message' => "Votre compte a été désactivé avec succès. Nous sommes désolés de vous voir partir."
             ]);
 
             // Gestion des erreurs inattendues

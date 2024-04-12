@@ -112,8 +112,9 @@ class ArtistController extends AbstractController
             $this->entityManager->flush();
 
             return new JsonResponse([
-                'error' => false,
-                'message' => "Artiste créé avec succès."
+                'success' => true,
+                'message' => "Votre compte d'artiste a été créé avec succès. Bienvenue dans notre commmunauté d'artistes !",
+                'artist_id' => $artist->getId()
             ]);
 
             // Gestion des erreurs inattendues
