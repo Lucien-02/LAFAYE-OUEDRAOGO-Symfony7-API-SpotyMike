@@ -238,18 +238,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function serializer()
     {
-        return [
-            "firstname" => $this->getFirstname(),
-            "lastname" => $this->getLastname(),
-            "email" => $this->getEmail(),
-            "tel" => $this->getTel(),
-            "sexe" => $this->getSexe(),
-            "active" => $this->getActive(),
-            "dateBirth" => $this->getDateBirth()->format('d/m/Y'),
-            "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
-            "updateAt" => $this->getUpdateAt()->format('Y-m-d H:i:s'),
-            "artist" => $this->getArtist() ?  $this->getArtist()->serializer() : [],
-        ];
+        if ($_SERVER['REQUEST_URI'] == '/register'){
+            return [
+                "firstname" => $this->getFirstname(),
+                "lastname" => $this->getLastname(),
+                "email" => $this->getEmail(),
+                "tel" => $this->getTel(),
+                "sexe" => $this->getSexe(),
+                "dateBirth" => $this->getDateBirth()->format('d/m/Y'),
+                "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
+                "updatedAt" => $this->getUpdateAt()->format('Y-m-d H:i:s')
+            ];
+        }
+        else{
+            return [
+                "firstname" => $this->getFirstname(),
+                "lastname" => $this->getLastname(),
+                "email" => $this->getEmail(),
+                "tel" => $this->getTel(),
+                "sexe" => $this->getSexe(),
+                "artist" => $this->getArtist() ? $this->getArtist()->serializer() : [],
+                "dateBirth" => $this->getDateBirth()->format('d/m/Y'),
+                "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s')
+            ];
+        }
+        
     }
 
     public function getDateBirth(): ?\DateTimeInterface
