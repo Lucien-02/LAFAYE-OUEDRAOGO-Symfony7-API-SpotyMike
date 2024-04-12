@@ -65,7 +65,7 @@ class UserController extends AbstractController
             $this->errorManager->checkNotFoundEntityId($user);
 
             return $this->json($user->serializer());
-        
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -79,13 +79,16 @@ class UserController extends AbstractController
         try {
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire
-            $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'active', 'dateBirth']);
+
+            $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth']);
+
             $firstname = $data['firstname'];
             $lastname = $data['lastname'];
             $email = $data['email'];
             $password = $data['password'];
-            $active = $data['active'];
             $birthday =  $data['dateBirth'];
+            $uniqueId = uniqid();
+
             if (isset($data['sexe'])) {
                 $sexe = $data['sexe'];
             }
@@ -103,7 +106,7 @@ class UserController extends AbstractController
             // vérif format date
             $this->errorManager->isValidDateFormat($birthday, 'd/m/Y');
             // vérif age
-            $this->errorManager->isAgeValid($birthday, 12);
+            $this->errorManager->isAgeValid($birthday, $ageMin);
 
             //vérif tel
             if (isset($data['tel'])) {
@@ -132,11 +135,12 @@ class UserController extends AbstractController
             $user->setDateBirth($dateOfBirth);
             $user->setSexe($sexe);
             $user->setEmail($email);
-            $user->setActive($active);
             $hash = $passwordHash->hashPassword($user, $password);
             $user->setPassword($hash);
+            $user->setIdUser($uniqueId);
+
             $this->entityManager->persist($user);
-          
+
             $this->entityManager->flush();
 
             $user->serializer();
@@ -152,6 +156,7 @@ class UserController extends AbstractController
             return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
         }
     }
+
 
     #[Route('/user/{id}', name: 'app_user_put', methods: 'PUT')]
     public function putUser(Request $request, int $id): JsonResponse

@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Label;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
 use Exception;
@@ -27,28 +30,32 @@ class LabelController extends AbstractController
     }
 
     #[Route('/label/all', name: 'app_labels_get_all', methods: 'GET')]
-    public function getLabels()
+    public function getLabels(TokenInterface $token, JWTTokenManagerInterface $JWTManager)
     {
-        try {
-            $labels = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($labels, "label");
+        $labels = $this->repository->findAll();
 
-            $serializedLabels = [];
-            foreach ($labels as $label) {
-                $serializedLabels[] = [
-                    'id' => $label->getId(),
-                    'nom' => $label->getNom()
-                ];
-            }
+        $this->errorManager->checkNotFoundEntity($labels, "label");
 
-            return new JsonResponse($serializedLabels);
-
-            // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        $serializedLabels = [];
+        foreach ($labels as $label) {
+            $serializedLabels[] = [
+                'id' => $label->getId(),
+                'nom' => $label->getNom()
+            ];
         }
+
+        $decodedtoken = $JWTManager->decode($token);
+        if ($decodedtoken['type'] == 'reset-password') {
+            return new JsonResponse(
+                [
+                    'error' => true,
+                    'message' => 'ca passe pas brother'
+                ],
+                404
+            );
+        }
+        return new JsonResponse($serializedLabels);
     }
 
     #[Route('/label/{id}', name: 'app_label_get', methods: 'GET')]
@@ -63,7 +70,7 @@ class LabelController extends AbstractController
                 'id' => $label->getId(),
                 'nom' => $label->getNom()
             ]);
-            
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
