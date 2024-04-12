@@ -32,7 +32,7 @@ class Artist
     #[ORM\JoinColumn(nullable: false)]
     private ?User $User_idUser = null;
 
-    #[ORM\OneToMany(targetEntity: Album::class, mappedBy: 'artist_User_idUser')]
+    #[ORM\OneToMany(targetEntity: Album::class, mappedBy: 'artist_User_idUser', cascade: ['persist', 'remove'])]
     private Collection $album_idAlbum;
 
 
@@ -142,12 +142,12 @@ class Artist
         return $this;
     }
 
-    public function serializer($children = false)
+    public function serializer($owner = false)
     {
         $albumsData = [];
         $albums = $this->getAlbumIdAlbum();
         foreach ($albums as $album) {
-            $albumsData[] = $album->serializer();
+            $albumsData[] = $album->serializer($owner);
         }
 
         return [
