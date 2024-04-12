@@ -33,7 +33,7 @@ class UserController extends AbstractController
         try {
             $users = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($users);
+            $this->errorManager->checkNotFoundUser($users);
 
             $serializedUsers = [];
             foreach ($users as $user) {
@@ -62,7 +62,7 @@ class UserController extends AbstractController
         try {
             $user = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($user);
+            $this->errorManager->checkNotFoundUserId($user);
 
             return $this->json($user->serializer());
 
@@ -164,7 +164,7 @@ class UserController extends AbstractController
         try {
             $user = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($user);
+            $this->errorManager->checkNotFoundUserId($user);
             
             parse_str($request->getContent(), $data);
 
@@ -219,7 +219,7 @@ class UserController extends AbstractController
         try {
             $user = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($user);
+            $this->errorManager->checkNotFoundUserId($user);
 
             $this->entityManager->remove($user);
             $this->entityManager->flush();
