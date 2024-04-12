@@ -37,12 +37,15 @@ class ErrorManager
     }
     public function checkNotFoundUser(array $entity)
     {
+
         if (!$entity){
             throw new Exception(ErrorTypes::NOT_FOUND_USER);
+
         }
     }
     public function checkNotFoundAlbum(array $entity)
     {
+
         if (!$entity){
             throw new Exception(ErrorTypes::NOT_FOUND_ALBUM);
         }
@@ -105,6 +108,7 @@ class ErrorManager
     {
         if (!$entity){
             throw new Exception(ErrorTypes::NOT_FOUND_ALBUM_ID);
+
         }
     }
     public function checkRequiredAttributes(array $data, array $requiredAttributes)
@@ -312,6 +316,10 @@ class ErrorManager
             case 'TokenPasswordExpire':
                 $errorMessage = "Votre token de réinitialisation de mot de passe a expiré.Veuiller refaire une demande de reinitialisation de mot de passe.";
                 $codeErreur = 400;
+                break;
+            case 'AccountAlreadyDesactivate':
+                $errorMessage = "Le compte est déja désactivé.";
+                $codeErreur = 409;
                 break;
             default:
                 $errorMessage = 'Erreur inconnue.';

@@ -12,6 +12,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
 use Exception;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 
 class UserController extends AbstractController
 {
@@ -23,7 +26,7 @@ class UserController extends AbstractController
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        
+
         $this->repository = $entityManager->getRepository(User::class);
     }
 
@@ -164,8 +167,9 @@ class UserController extends AbstractController
         try {
             $user = $this->repository->find($id);
 
+
             $this->errorManager->checkNotFoundUserId($user);
-            
+
             parse_str($request->getContent(), $data);
 
             $email = $data['email'];
@@ -205,7 +209,7 @@ class UserController extends AbstractController
                 'error' => false,
                 'message' => "Utilisateur mis à jour avec succès."
             ]);
-        
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -228,7 +232,36 @@ class UserController extends AbstractController
                 'error' => false,
                 'message' => "Votre utilisateur a été supprimé avec succès."
             ]);
-        
+
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+        }
+    }
+
+    #[Route('/account-desactivation', name: 'app_user_delete', methods: 'DELETE')]
+    public function account_desactivation(TokenInterface $token, JWTTokenManagerInterface $JWTManager, ErrorManager $errorManager): JsonResponse
+    {
+        try {
+
+            $decodedtoken = $JWTManager->decode($token);
+            $email =  $decodedtoken['username'];
+            $user = $this->repository->findOneBy(['email' => $email]);
+
+            if (!$user->getActive()) {
+                throw new Exception(ErrorTypes::ACCOUNT_ALREADY_DESACTIVATE);
+            }
+
+            $user->setActive(false);
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Votre compte  a été  désactiver avec succès.Nous sommes désolés de vus voir partir."
+            ]);
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
