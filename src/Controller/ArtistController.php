@@ -67,16 +67,61 @@ class ArtistController extends AbstractController
             parse_str($request->getContent(), $data);
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->Tokennotreset($decodedtoken);
-            //Données manquantes
-            $this->errorManager->checkRequiredAttributes($data, ['fullname', 'user_id_user_id']);
+            $email =  $decodedtoken['username'];
+            $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+            $artist = $request_user->getArtist();
+            $dateBirth = $request_user->getDateBirth();
+            $birthday = $dateBirth->format('d/m/Y ');
 
-            //Vérification token
-            if (False) {
+            if ($artist !== null) {
+                $this->errorManager->checkNotFoundArtistId($artist);
+                if (isset($data['fullname'])) {
+                    $artist->setFullname($data['fullname']);
+                }
+                if (isset($data['description'])) {
+                    $artist->setDescription($data['description']);
+                }
+
+                $this->entityManager->persist($artist);
+                $this->entityManager->flush();
+
                 return new JsonResponse([
-                    'error' => true,
-                    'message' => "Votre token n'est pas correct."
-                ], 401);
+                    'error' => false,
+                    'message' => "Artiste mis à jour avec succès."
+                ]);
+            } else {
+                //Données manquantes
+                $this->errorManager->checkRequiredAttributes($data, ['fullname', 'label']);
+
+                $this->errorManager->isAgeValid($birthday, 16);
+                // Recherche d'un artiste avec le même nom dans la base de données
+                $fullname_exist = $this->repository->findOneBy(['fullname' =>  $data['fullname']]);
+                if ($fullname_exist) {
+                    throw new Exception(ErrorTypes::NOT_UNIQUE_ARTIST_NAME);
+                }
+
+                $artist = new Artist();
+                $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+
+
+                $artist->setFullname($data['fullname']);
+                $artist->setUserIdUser($request_user);
+                if (isset($data['description'])) {
+                    $artist->setdescription($data['description']);
+                }
+                $artist->setCreateAt($date);
+                $artist->setUpdateAt($date);
+
+                $this->entityManager->persist($artist);
+                $this->entityManager->flush();
+
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => "Votre compte d'artiste a été créé avec succès. Bienvenue dans notre commmunauté d'artistes !",
+                    'artist_id' => $artist->getId()
+                ]);
             }
+
 
             // Vérification du type des données
             if (!is_string($data['fullname']) || !is_numeric($data['user_id_user_id'])) {
@@ -87,37 +132,14 @@ class ArtistController extends AbstractController
                 ], 409);
             }
 
-            // Recherche d'un artiste avec le même nom dans la base de données
-            $existingArtist = $this->entityManager->getRepository(Artist::class)->findOneBy(['fullname' => $data['fullname']]);
-            $this->errorManager->checkNotUniqueArtistName($existingArtist);
+
 
             //Recherche si le user est deja un artiste
             $user = $this->entityManager->getRepository(User::class)->find($data['user_id_user_id']);
 
             $this->errorManager->checkNotFoundArtistId($user);
 
-            $artist = new Artist();
-            $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-            $birthday = $user->getDateBirth();
-            //Vérification Age
-            $this->errorManager->isAgeValid($birthday, 16);
 
-            $artist->setFullname($data['fullname']);
-            $artist->setUserIdUser($user);
-            if (isset($data['description'])) {
-                $artist->setdescription($data['description']);
-            }
-            $artist->setCreateAt($date);
-            $artist->setUpdateAt($date);
-
-            $this->entityManager->persist($artist);
-            $this->entityManager->flush();
-
-            return new JsonResponse([
-                'success' => true,
-                'message' => "Votre compte d'artiste a été créé avec succès. Bienvenue dans notre commmunauté d'artistes !",
-                'artist_id' => $artist->getId()
-            ]);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -125,40 +147,6 @@ class ArtistController extends AbstractController
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
     }
-
-    #[Route('/artist/{id}', name: 'app_artist_put', methods: ['PUT'])]
-    public function putArtist(Request $request, int $id, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
-    {
-        try {
-            $artist = $this->repository->find($id);
-
-            $this->errorManager->checkNotFoundArtistId($artist);
-
-            parse_str($request->getContent(), $data);
-            $decodedtoken = $JWTManager->decode($token);
-            $this->errorManager->Tokennotreset($decodedtoken);
-            if (isset($data['fullname'])) {
-                $artist->setFullname($data['fullname']);
-            }
-            if (isset($data['description'])) {
-                $artist->setDescription($data['description']);
-            }
-
-            $this->entityManager->persist($artist);
-            $this->entityManager->flush();
-
-            return new JsonResponse([
-                'error' => false,
-                'message' => "Artiste mis à jour avec succès."
-            ]);
-
-            // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
-        }
-    }
-
 
 
     #[Route('/artist', name: 'app_artists_get', methods: ['GET'])]
