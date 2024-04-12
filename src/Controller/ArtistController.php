@@ -154,8 +154,8 @@ class ArtistController extends AbstractController
     {
         try {
             return $this->json([
-                "error" => true,
-                "message" => "Nom de l'artiste manquant",
+                'error' => true,
+                'message' => "Le nom d'artiste est obligatoire pour cette requete."
             ], 400);
 
             // Gestion des erreurs inattendues
@@ -193,12 +193,22 @@ class ArtistController extends AbstractController
     public function get_artist_by_id(TokenInterface $token, string $fullname, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
+
+
+
             $artist = $this->repository->findOneBy(['fullname' => $fullname]);
             $owner = false;
+            if (!preg_match('/^[^\s]+$/u', $fullname)) {
+                return $this->json([
+                    'error' => true,
+                    'message' => "Le format du nom de l'artiste fourni est invalide."
+                ], 400);
+            }
+
             if (!$artist) {
                 return $this->json([
                     'error' => true,
-                    'message' => 'Une ou plusieurs données sont erronées.'
+                    'message' => 'Aucun  artiste  trouvé correspondant au nom fourni.'
                 ], 409);
             }
             $email = $artist->getUserIdUser()->getEmail();
