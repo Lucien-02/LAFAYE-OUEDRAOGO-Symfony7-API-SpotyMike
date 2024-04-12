@@ -20,8 +20,10 @@ class ErrorManager
 
     public function Tokennotreset(array $decodedtoken)
     {
-        if ($decodedtoken['type'] == 'reset-password') {
-            throw new Exception(ErrorTypes::TOKEN_INVALID_MISSING);
+        if (isset($decodedtoken['type'])) {
+            if ($decodedtoken['type'] == 'reset-password') {
+                throw new Exception(ErrorTypes::TOKEN_INVALID_MISSING);
+            }
         }
     }
 

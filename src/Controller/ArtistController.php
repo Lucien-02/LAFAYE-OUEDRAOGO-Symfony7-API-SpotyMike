@@ -190,7 +190,7 @@ class ArtistController extends AbstractController
     public function get_artist_by_id(TokenInterface $token, string $fullname, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
-            if ($fullname = " ") {
+            if ($fullname == " ") {
                 return $this->json([
                     'error' => true,
                     'message' => "Le nom d'artiste est obligatoire pour cette requete."
@@ -212,6 +212,7 @@ class ArtistController extends AbstractController
                     'message' => 'Aucun  artiste  trouvé correspondant au nom fourni.'
                 ], 409);
             }
+
             $email = $artist->getUserIdUser()->getEmail();
             $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             $decodedtoken = $JWTManager->decode($token);
