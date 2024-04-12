@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Label;
-use App\Util\ErrorTypes;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,6 +11,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use App\Error\ErrorTypes;
+use App\Error\ErrorManager;
+use App\Success\SuccessManager;
+use Exception;
 
 class LabelController extends AbstractController
 {
@@ -28,20 +32,20 @@ class LabelController extends AbstractController
     }
 
     #[Route('/label/all', name: 'app_labels_get_all', methods: 'GET')]
-    public function getLabels()
+    public function getLabels(TokenInterface $token, JWTTokenManagerInterface $JWTManager)
     {
-        try {
-            $labels = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($labels, "label");
+        $labels = $this->repository->findAll();
 
-            $serializedLabels = [];
-            foreach ($labels as $label) {
-                $serializedLabels[] = [
-                    'id' => $label->getId(),
-                    'nom' => $label->getNom()
-                ];
-            }
+        $this->errorManager->checkNotFoundEntity($labels, "label");
+
+        $serializedLabels = [];
+        foreach ($labels as $label) {
+            $serializedLabels[] = [
+                'id' => $label->getId(),
+                'nom' => $label->getNom()
+            ];
+        }
 
         $decodedtoken = $JWTManager->decode($token);
         if ($decodedtoken['type'] == 'reset-password') {
