@@ -74,6 +74,22 @@ class ArtistController extends AbstractController
             $birthday = $dateBirth->format('d/m/Y ');
 
             if ($artist !== null) {
+                if (isset($data['fullname']) && !is_string($data['fullname'])) {
+
+                    return new JsonResponse([
+                        'error' => true,
+                        'message' => "Les donné fournie sont invalide .Veuiller vérifier les donné soumise.",
+
+                    ]);
+                }
+                if (isset($data['description']) && !is_string($data['description'])) {
+
+                    return new JsonResponse([
+                        'error' => true,
+                        'message' => "Les donné fournie sont invalide .Veuiller vérifier les donné soumise.",
+
+                    ]);
+                }
                 $this->errorManager->checkNotFoundArtistId($artist);
                 if (isset($data['fullname'])) {
                     $artist->setFullname($data['fullname']);
@@ -81,6 +97,7 @@ class ArtistController extends AbstractController
                 if (isset($data['description'])) {
                     $artist->setDescription($data['description']);
                 }
+
 
                 $this->entityManager->persist($artist);
                 $this->entityManager->flush();
