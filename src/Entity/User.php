@@ -19,8 +19,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?int $idUser = null;
+    #[ORM\Column(length: 55)]
+    private ?string $idUser = null;
 
     #[ORM\Column(length: 55)]
     private ?string $lastname = null;
@@ -39,6 +39,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 15, nullable: true)]
     private ?string $tel = null;
+
+    #[ORM\Column]
+    private ?bool $active = true;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createAt = null;
@@ -157,6 +160,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getActive(): ?bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): static
+    {
+        $this->active = $active;
+
+        return $this;
+    }
+
     public function getCreateAt(): ?\DateTimeImmutable
     {
         return $this->createAt;
@@ -229,6 +244,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             "email" => $this->getEmail(),
             "tel" => $this->getTel(),
             "sexe" => $this->getSexe(),
+            "active" => $this->getActive(),
             "dateBirth" => $this->getDateBirth()->format('d/m/Y'),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
             "updateAt" => $this->getUpdateAt()->format('Y-m-d H:i:s'),
