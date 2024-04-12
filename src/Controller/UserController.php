@@ -163,7 +163,7 @@ class UserController extends AbstractController
 
 
     #[Route('/user', name: 'app_user_post', methods: 'POST')]
-    public function postUser(TokenInterface $token, Request $request, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function postUser(TokenInterface $token, Request $request, JWTTokenManagerInterface $JWTManager, UserPasswordHasherInterface $passwordHash): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
@@ -206,7 +206,11 @@ class UserController extends AbstractController
                 $request_user->setTel($data['tel']);
             }
             if (isset($data['encrypte'])) {
-                $request_user->setPassword($data['encrypte']);
+                // vérif format mdp
+                $this->errorManager->isValidPassword($data['encrypte']);
+
+                $hash = $passwordHash->hashPassword($request_user, $data['encrypte']);
+                $request_user->setPassword($hash);
             }
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $request_user->setUpdateAt($date);
