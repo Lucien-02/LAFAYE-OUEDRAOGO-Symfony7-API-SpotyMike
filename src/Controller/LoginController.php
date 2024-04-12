@@ -63,12 +63,11 @@ class LoginController extends  AbstractController
             if (!$user) {
                 return $errorManager->generateError(ErrorTypes::USER_NOT_FOUND);
             }
-            /*
-            // vérif Compte actif
-            if (!$user->isActive()) {
+
+            if (!$user->getActive()) {
                 return $errorManager->generateError("AccountNotActive");
             }
-            */
+
             if ($passwordHash->isPasswordValid($user, $password)) {
                 $token = $JWTManager->create($user);
                 return new JsonResponse([
