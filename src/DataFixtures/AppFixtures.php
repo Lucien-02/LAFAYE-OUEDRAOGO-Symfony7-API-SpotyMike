@@ -29,7 +29,7 @@ class AppFixtures extends Fixture
 
             // Add New User
             $user = new User;
-            $user->setIdUser($i);
+            $user->setIdUser(uniqid());
             $sexe = rand(0, 1) === 0 ? 0 : 1;
             $user->setSexe($sexe);
             $user->setFirstname("User_" . $i);
