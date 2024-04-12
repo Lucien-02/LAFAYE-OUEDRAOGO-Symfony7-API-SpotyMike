@@ -35,16 +35,80 @@ class ErrorManager
             throw new Exception(ErrorTypes::INVALID_PASSWORD_FORMAT);
         }
     }
-    public function checkNotFoundEntity(array $entity)
+    public function checkNotFoundUser(array $entity)
     {
-        if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_ENTITY);
+
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_USER);
+
         }
     }
-    public function checkNotFoundEntityId(object $entity)
+    public function checkNotFoundAlbum(array $entity)
     {
-        if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_ENTITY_ID);
+
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_ALBUM);
+        }
+    }
+    public function checkNotFoundSong(array $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_SONG);
+        }
+    }
+    public function checkNotFoundPlaylist(array $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_PLAYLIST);
+        }
+    }
+    public function checkNotFoundLabel(array $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_LABEL);
+        }
+    }
+    public function checkNotFoundArtist(array $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_ARTIST);
+        }
+    }
+    public function checkNotFoundArtistId(object $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_ARTIST_ID);
+        }
+    }
+    public function checkNotFoundUserId(object $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_USER_ID);
+        }
+    }
+    public function checkNotFoundLabelId(object $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_LABEL_ID);
+        }
+    }
+    public function checkNotFoundPlaylistId(object $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_PLAYLIST_ID);
+        }
+    }
+    public function checkNotFoundSongId(object $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_SONG_ID);
+        }
+    }
+    public function checkNotFoundAlbumId(object $entity)
+    {
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_ALBUM_ID);
+
         }
     }
     public function checkRequiredAttributes(array $data, array $requiredAttributes)
@@ -193,12 +257,52 @@ class ErrorManager
                 $errorMessage = 'Cet email est déjà utilisé par un autre compte.';
                 $codeErreur = 409;
                 break;
-            case 'NotFoundEntity':
-                $errorMessage = "Aucune entité trouvée.";
+            case 'NotFoundArtist':
+                $errorMessage = "Aucun artiste trouvé.";
                 $codeErreur = 404;
                 break;
-            case 'NotFoundEntityId':
-                $errorMessage = "Entité introuvable.";
+            case 'NotFoundAlbum':
+                $errorMessage = "Aucun album trouvé.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundUser':
+                $errorMessage = "Aucun utilisateur trouvé.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundLabel':
+                $errorMessage = "Aucun label trouvé.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundPlaylist':
+                $errorMessage = "Aucune playlist trouvée.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundSong':
+                $errorMessage = "Aucun son trouvé.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundAlbumId':
+                $errorMessage = "Album introuvable.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundArtistId':
+                $errorMessage = "Artiste introuvable.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundSongId':
+                $errorMessage = "Son introuvable.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundUserId':
+                $errorMessage = "Utilisateur introuvable.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundLabelId':
+                $errorMessage = "Label introuvable.";
+                $codeErreur = 404;
+                break;
+            case 'NotFoundPlaylistId':
+                $errorMessage = "Playlist introuvable.";
                 $codeErreur = 404;
                 break;
             case 'NotUniqueArtistName':
