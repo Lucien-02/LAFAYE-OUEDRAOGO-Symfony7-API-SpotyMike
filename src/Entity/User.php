@@ -238,7 +238,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function serializer()
     {
-        if ($_SERVER['REQUEST_URI'] == '/register'){
+        if ($_SERVER['REQUEST_URI'] == '/register') {
             return [
                 "firstname" => $this->getFirstname(),
                 "lastname" => $this->getLastname(),
@@ -249,8 +249,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
                 "updatedAt" => $this->getUpdateAt()->format('Y-m-d H:i:s')
             ];
-        }
-        else{
+        } else {
             return [
                 "firstname" => $this->getFirstname(),
                 "lastname" => $this->getLastname(),
@@ -262,7 +261,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s')
             ];
         }
-        
     }
 
     public function getDateBirth(): ?\DateTimeInterface

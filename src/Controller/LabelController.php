@@ -25,7 +25,7 @@ class LabelController extends AbstractController
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        
+
         $this->repository = $entityManager->getRepository(Label::class);
     }
 
@@ -46,15 +46,7 @@ class LabelController extends AbstractController
         }
 
         $decodedtoken = $JWTManager->decode($token);
-        if ($decodedtoken['type'] == 'reset-password') {
-            return new JsonResponse(
-                [
-                    'error' => true,
-                    'message' => 'ca passe pas brother'
-                ],
-                404
-            );
-        }
+
         return new JsonResponse($serializedLabels);
     }
 
@@ -151,7 +143,7 @@ class LabelController extends AbstractController
                 'error' => false,
                 'message' => "Votre label a été supprimé avec succès."
             ]);
-            
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
