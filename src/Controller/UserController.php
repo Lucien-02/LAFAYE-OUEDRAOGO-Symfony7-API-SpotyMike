@@ -45,6 +45,7 @@ class UserController extends AbstractController
                     'encrypt' => $user->getPassword(),
                     'mail' => $user->getEmail(),
                     'tel' => $user->getTel(),
+                    'active' => $user->getActive(),
                     'birthday' => $user->getDateBirth()
                 ];
             }
@@ -80,11 +81,12 @@ class UserController extends AbstractController
         try {
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire
-            $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth']);
+            $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'active', 'dateBirth']);
             $firstname = $data['firstname'];
             $lastname = $data['lastname'];
             $email = $data['email'];
             $password = $data['password'];
+            $active = $data['active'];
             $birthday =  $data['dateBirth'];
             if (isset($data['sexe'])) {
                 $sexe = $data['sexe'];
@@ -132,16 +134,14 @@ class UserController extends AbstractController
             $user->setDateBirth($dateOfBirth);
             $user->setSexe($sexe);
             $user->setEmail($email);
-
+            $user->setActive($active);
             $hash = $passwordHash->hashPassword($user, $password);
             $user->setPassword($hash);
-
             $this->entityManager->persist($user);
+          
             $this->entityManager->flush();
 
-            return $this->json([
-                $user->serializer()
-            ]);
+            $user->serializer();
 
             $this->successManager->validPostRequest("Utilisateur");
 
