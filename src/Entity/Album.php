@@ -40,7 +40,7 @@ class Album
     #[ORM\ManyToOne(inversedBy: 'albums', cascade: ['persist', 'remove'])]
     private ?Artist $artist_User_idUser = null;
 
-    #[ORM\OneToMany(targetEntity: Song::class, mappedBy: 'album')]
+    #[ORM\OneToMany(targetEntity: Song::class, mappedBy: 'album', cascade: ['persist', 'remove'])]
     private Collection $song_idSong;
 
     public function __construct()

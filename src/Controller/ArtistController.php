@@ -33,33 +33,30 @@ class ArtistController extends AbstractController
     #[Route('/artist', name: 'app_artist_delete', methods: ['DELETE'])]
     public function delete_artist(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
-        try {
-            $decodedtoken = $JWTManager->decode($token);
-            $email =  $decodedtoken['username'];
-            $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-            $request_artist = $request_user->getArtist();
-            if (!$request_artist) {
-                return $this->json([
-                    'error' => true,
-                    'message' => 'Compte artiste nom trouvé .Vérifier les informations fournies et réessayer'
-                ], 409);
-            }
 
-
-            $this->entityManager->remove($request_artist);
-
-            $this->entityManager->flush();
-
-            return new JsonResponse([
-                'error' => false,
-                'message' => "Le compte artiste a été désactivé avec succès."
-            ]);
-
-            // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        $decodedtoken = $JWTManager->decode($token);
+        $email =  $decodedtoken['username'];
+        $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        $request_artist = $request_user->getArtist();
+        if (!$request_artist) {
+            return $this->json([
+                'error' => true,
+                'message' => 'Compte artiste nom trouvé .Vérifier les informations fournies et réessayer'
+            ], 409);
         }
+
+
+        $this->entityManager->remove($request_artist);
+
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'error' => false,
+            'message' => "Le compte artiste a été désactivé avec succès."
+        ]);
+
+        // Gestion des erreurs inattendues
+        throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
     }
 
     #[Route('/artist', name: 'post_artist', methods: 'POST')]
@@ -189,8 +186,6 @@ class ArtistController extends AbstractController
     {
         try {
             if ($fullname = " ") {
-
-
                 return $this->json([
                     'error' => true,
                     'message' => "Le nom d'artiste est obligatoire pour cette requete."
