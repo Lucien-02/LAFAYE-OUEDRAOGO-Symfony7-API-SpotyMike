@@ -30,20 +30,29 @@ class ArtistController extends AbstractController
         $this->repository = $entityManager->getRepository(Artist::class);
     }
 
-    #[Route('/artist/{id}', name: 'app_artist_delete', methods: ['DELETE'])]
-    public function delete_artist_by_id(int $id): JsonResponse
+    #[Route('/artist', name: 'app_artist_delete', methods: ['DELETE'])]
+    public function delete_artist(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
-            $artist = $this->repository->find($id);
+            $decodedtoken = $JWTManager->decode($token);
+            $email =  $decodedtoken['username'];
+            $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+            $request_artist = $request_user->getArtist();
+            if (!$request_artist) {
+                return $this->json([
+                    'error' => true,
+                    'message' => 'Compte artiste nom trouvé .Vérifier les informations fournies et réessayer'
+                ], 409);
+            }
 
-            $this->errorManager->checkNotFoundArtistId($artist);
 
-            $this->entityManager->remove($artist);
+            $this->entityManager->remove($request_artist);
+
             $this->entityManager->flush();
 
             return new JsonResponse([
                 'error' => false,
-                'message' => "Votre artiste a été supprimé avec succès."
+                'message' => "Le compte artiste a été désactivé avec succès."
             ]);
 
             // Gestion des erreurs inattendues
@@ -149,23 +158,9 @@ class ArtistController extends AbstractController
         }
     }
 
-    #[Route('/artist/', name: 'empty_artist', methods: ['GET'])]
-    public function emptyArtist(): JsonResponse
-    {
-        try {
-            return $this->json([
-                'error' => true,
-                'message' => "Le nom d'artiste est obligatoire pour cette requete."
-            ], 400);
 
-            // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
-        }
-    }
 
-    #[Route('/artist/all', name: 'app_artists_get', methods: ['GET'])]
+    #[Route('/artist', name: 'app_artists_get', methods: ['GET'])]
     public function get_all_artists(): JsonResponse
     {
         try {
@@ -193,8 +188,14 @@ class ArtistController extends AbstractController
     public function get_artist_by_id(TokenInterface $token, string $fullname, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
+            if ($fullname = " ") {
 
 
+                return $this->json([
+                    'error' => true,
+                    'message' => "Le nom d'artiste est obligatoire pour cette requete."
+                ], 400);
+            }
 
             $artist = $this->repository->findOneBy(['fullname' => $fullname]);
             $owner = false;
