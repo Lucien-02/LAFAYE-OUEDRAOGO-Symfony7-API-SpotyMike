@@ -38,77 +38,75 @@ class ErrorManager
     public function checkNotFoundUser(array $entity)
     {
 
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_USER);
-
         }
     }
     public function checkNotFoundAlbum(array $entity)
     {
 
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ALBUM);
         }
     }
     public function checkNotFoundSong(array $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_SONG);
         }
     }
     public function checkNotFoundPlaylist(array $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_PLAYLIST);
         }
     }
     public function checkNotFoundLabel(array $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_LABEL);
         }
     }
     public function checkNotFoundArtist(array $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ARTIST);
         }
     }
     public function checkNotFoundArtistId(object $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ARTIST_ID);
         }
     }
     public function checkNotFoundUserId(object $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_USER_ID);
         }
     }
     public function checkNotFoundLabelId(object $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_LABEL_ID);
         }
     }
     public function checkNotFoundPlaylistId(object $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_PLAYLIST_ID);
         }
     }
     public function checkNotFoundSongId(object $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_SONG_ID);
         }
     }
     public function checkNotFoundAlbumId(object $entity)
     {
-        if (!$entity){
+        if (!$entity) {
             throw new Exception(ErrorTypes::NOT_FOUND_ALBUM_ID);
-
         }
     }
     public function checkRequiredAttributes(array $data, array $requiredAttributes)

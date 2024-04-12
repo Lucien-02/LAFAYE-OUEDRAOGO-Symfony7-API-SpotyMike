@@ -24,7 +24,7 @@ class ArtistController extends AbstractController
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        
+
         $this->repository = $entityManager->getRepository(Artist::class);
     }
 
@@ -33,7 +33,7 @@ class ArtistController extends AbstractController
     {
         try {
             $artist = $this->repository->find($id);
-            
+
             $this->errorManager->checkNotFoundArtistId($artist);
 
             $this->entityManager->remove($artist);
@@ -43,7 +43,7 @@ class ArtistController extends AbstractController
                 'error' => false,
                 'message' => "Votre artiste a été supprimé avec succès."
             ]);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -76,7 +76,7 @@ class ArtistController extends AbstractController
                     'data' => $data
                 ], 409);
             }
-            
+
             // Recherche d'un artiste avec le même nom dans la base de données
             $existingArtist = $this->entityManager->getRepository(Artist::class)->findOneBy(['fullname' => $data['fullname']]);
             $this->errorManager->checkNotUniqueArtistName($existingArtist);
@@ -139,7 +139,7 @@ class ArtistController extends AbstractController
                 'error' => false,
                 'message' => "Artiste mis à jour avec succès."
             ]);
-        
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -155,7 +155,7 @@ class ArtistController extends AbstractController
                 "error" => true,
                 "message" => "Nom de l'artiste manquant",
             ], 400);
-        
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -174,7 +174,11 @@ class ArtistController extends AbstractController
             }
             $this->errorManager->checkNotFoundArtist($artists);
 
-            return new JsonResponse($artist_serialized);
+            return $this->json([
+                "error" => false,
+                "artists" => $artist_serialized,
+                "message" => 'Informations des artistes récupérées avec succès.',
+            ]);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);

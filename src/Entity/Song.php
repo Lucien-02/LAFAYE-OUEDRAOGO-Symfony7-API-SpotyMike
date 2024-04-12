@@ -190,7 +190,8 @@ class Song
         return [
             "id" => $this->getId(),
             "title" => $this->getTitle(),
-            // Ajoutez d'autres attributs de l'album si nécessaire
+            "cover" => $this->getCover(),
+            "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
         ];
     }
 }
