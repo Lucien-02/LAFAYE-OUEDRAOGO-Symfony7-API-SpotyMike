@@ -123,6 +123,10 @@ class ErrorManager
                 $errorMessage = 'Email manquant.Veuiller fournir  votre email  pour la récupération du mot de passe.';
                 $codeErreur = 400;
                 break;
+            case 'MissingPassword':
+                $errorMessage = 'Veuiller fournir un nouveaux mot de passe.';
+                $codeErreur = 400;
+                break;
             case 'MissingAttributesLogin':
                 $errorMessage = 'Email/Password manquants';
                 $codeErreur = 400;
@@ -171,6 +175,14 @@ class ErrorManager
             case 'NotUniqueEmail':
                 $errorMessage = 'Cet email est déja utilisé par un autre compte.';
                 $codeErreur = 409;
+                break;
+            case 'TokenInvalidMissing':
+                $errorMessage = "Token de réinitialisation  manquant  ou invalide .Veuiller utiliser le lien fourni dans l'email de reinitialisation de mot de passe";
+                $codeErreur = 400;
+                break;
+            case 'TokenPasswordExpire':
+                $errorMessage = "Votre token de réinitialisation de mot de passe a expiré.Veuiller refaire une demande de reinitialisation de mot de passe.";
+                $codeErreur = 400;
                 break;
 
             default:

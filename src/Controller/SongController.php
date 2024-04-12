@@ -89,11 +89,13 @@ class SongController extends AbstractController
         parse_str($request->getContent(), $data);
 
         if (!isset($data['title']) || !isset($data['url']) || !isset($data['cover']) || !isset($data['visibility']) || !isset($data['album_id']) || !isset($data['create_at']) || !isset($data['song'])) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Une ou plusieurs données obligatoires sont manquantes'
-            ], 
-            400);
+            return new JsonResponse(
+                [
+                    'error' => true,
+                    'message' => 'Une ou plusieurs données obligatoires sont manquantes'
+                ],
+                400
+            );
         }
 
         $album = $this->entityManager->getRepository(Album::class)->find($data['album_id']);

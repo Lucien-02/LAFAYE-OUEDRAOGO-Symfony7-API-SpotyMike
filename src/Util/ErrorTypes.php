@@ -8,6 +8,7 @@ class ErrorTypes
     public const TOO_MANY_PASSWORD_ATTEMPTS = 'TooManyPasswordAttempts';
     public const MISSING_ATTRIBUTES = 'MissingAttributes';
     public const MISSING_EMAIL = 'MissingEmail';
+    public const MISSING_PASSWORD = 'MissingPassword';
     public const INVALID_EMAIL = 'InvalidEmail';
     public const INVALID_PASSWORD_FORMAT = 'InvalidPasswordFormat';
     public const USER_NOT_FOUND = 'UserNotFound';
@@ -19,4 +20,6 @@ class ErrorTypes
     public const INVALID_PHONE_NUMBER = 'InvalidPhoneNumber';
     public const INVALID_GENDER = 'InvalidGender';
     public const NOT_UNIQUE_EMAIL = 'NotUniqueEmail';
+    public const TOKEN_INVALID_MISSING = 'TokenInvalidMissing';
+    public const TOKEN_PASSWORD_EXPIRE = 'TokenPasswordExpire';
 }

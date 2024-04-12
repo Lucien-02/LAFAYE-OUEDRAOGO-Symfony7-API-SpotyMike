@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Label;
+use App\Util\ErrorTypes;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 class LabelController extends AbstractController
 {
@@ -21,16 +24,18 @@ class LabelController extends AbstractController
     }
 
     #[Route('/labels', name: 'app_labels_get_all', methods: 'GET')]
-    public function getLabels()
+    public function getLabels(TokenInterface $token, JWTTokenManagerInterface $JWTManager)
     {
         $labels = $this->repository->findAll();
 
         if (!$labels) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "Aucun label trouvé"
-            ],
-            404);
+            return new JsonResponse(
+                [
+                    'error' => true,
+                    'message' => "Aucun label trouvé"
+                ],
+                404
+            );
         }
 
         $serializedLabels = [];
@@ -41,6 +46,16 @@ class LabelController extends AbstractController
             ];
         }
 
+        $decodedtoken = $JWTManager->decode($token);
+        if ($decodedtoken['type'] == 'reset-password') {
+            return new JsonResponse(
+                [
+                    'error' => true,
+                    'message' => 'ca passe pas brother'
+                ],
+                404
+            );
+        }
         return new JsonResponse($serializedLabels);
     }
 
@@ -69,11 +84,13 @@ class LabelController extends AbstractController
         parse_str($request->getContent(), $data);
 
         if (!isset($data['nom']) || !isset($data['create_at'])) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Une ou plusieurs données obligatoires sont manquantes'
-            ], 
-            400);
+            return new JsonResponse(
+                [
+                    'error' => true,
+                    'message' => 'Une ou plusieurs données obligatoires sont manquantes'
+                ],
+                400
+            );
         }
 
         $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));

@@ -19,7 +19,13 @@ security:
         check_path: /login # or api_login_check as defined in config/routes.yaml
         success_handler: lexik_jwt_authentication.handler.authentication_success
         failure_handler: lexik_jwt_authentication.handler.authentication_failure
-
+    reset:
+      pattern: ^/reset
+      stateless: true
+      json_login:
+        check_path: /reset # or api_login_check as defined in config/routes.yaml
+        success_handler: lexik_jwt_authentication.handler.authentication_success
+        failure_handler: lexik_jwt_authentication.handler.authentication_failure
     api:
       pattern: ^/
       stateless: true
@@ -29,7 +35,7 @@ security:
     - { path: ^/login, roles: "PUBLIC_ACCESS" }
     - { path: ^/register, roles: "PUBLIC_ACCESS" }
     - { path: ^/password-lost, roles: "PUBLIC_ACCESS" }
-    - { path: ^/reset-password, roles: "PUBLIC_ACCESS" }
+    - { path: ^/reset-password/, roles: "PUBLIC_ACCESS" }
     - { path: ^/, methods: GET, roles: "PUBLIC_ACCESS" }
     - { path: ^/, roles: "IS_AUTHENTICATED_FULLY" }
 
