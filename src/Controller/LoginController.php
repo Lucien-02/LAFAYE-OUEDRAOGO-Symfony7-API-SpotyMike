@@ -47,9 +47,10 @@ class LoginController extends  AbstractController
 
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire
-            $errorManager->checkRequiredAttributes($data, ['Email', 'Password']);
+            $errorManager->checkRequiredLoginAttributes($data, ['Email', 'Password']);
             $email = $data['Email'];
             $password = $data['Password'];
+
             // vérif format mail
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return $errorManager->generateError(ErrorTypes::INVALID_EMAIL);
@@ -63,12 +64,7 @@ class LoginController extends  AbstractController
             if (!$user) {
                 return $errorManager->generateError(ErrorTypes::USER_NOT_FOUND);
             }
-            /*
-            // vérif Compte actif
-            if (!$user->isActive()) {
-                return $errorManager->generateError("AccountNotActive");
-            }
-            */
+
             if ($passwordHash->isPasswordValid($user, $password)) {
                 $token = $JWTManager->create($user);
                 return new JsonResponse([
