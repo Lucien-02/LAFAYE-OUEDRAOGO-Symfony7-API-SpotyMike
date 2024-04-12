@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
-use PhpParser\Node\Expr\Cast\Array_;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -61,8 +60,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(targetEntity: playlist::class, mappedBy: 'user')]
     private Collection $playlists;
-
-    private array  $roles = ["PUBLIC_ACCESS"];
 
     public function __construct()
     {
@@ -203,14 +200,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        return $this->roles;
-    }
-    public function setRoles(array $roles): static
-    {
-
-        $this->roles = $roles;
-
-        return $this;
+        return ["PUBLIC_ACCESS"];
     }
 
     /**
