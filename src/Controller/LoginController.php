@@ -47,9 +47,10 @@ class LoginController extends  AbstractController
 
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire
-            $errorManager->checkRequiredAttributes($data, ['Email', 'Password']);
+            $errorManager->checkRequiredLoginAttributes($data, ['Email', 'Password']);
             $email = $data['Email'];
             $password = $data['Password'];
+
             // vérif format mail
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return $errorManager->generateError(ErrorTypes::INVALID_EMAIL);
@@ -65,7 +66,7 @@ class LoginController extends  AbstractController
             }
 
             if (!$user->getActive()) {
-                return $errorManager->generateError("AccountNotActive");
+                return $errorManager->generateError(ErrorTypes::NOT_ACTIVE_USER);
             }
 
             if ($passwordHash->isPasswordValid($user, $password)) {

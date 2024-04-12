@@ -7,10 +7,12 @@ class ErrorTypes
     public const TOO_MANY_CONNECTION_ATTEMPTS = 'TooManyConnectionAttempts';
     public const TOO_MANY_PASSWORD_ATTEMPTS = 'TooManyPasswordAttempts';
     public const MISSING_ATTRIBUTES = 'MissingAttributes';
+    public const MISSING_ATTRIBUTES_LOGIN = 'MissingAttributesLogin';
     public const MISSING_EMAIL = 'MissingEmail';
     public const MISSING_PASSWORD = 'MissingPassword';
     public const INVALID_EMAIL = 'InvalidEmail';
     public const INVALID_PASSWORD_FORMAT = 'InvalidPasswordFormat';
+    public const NOT_ACTIVE_USER = 'NotActiveUser';
     public const NOT_FOUND_ARTIST = 'NotFoundArtist';
     public const NOT_FOUND_ALBUM = 'NotFoundAlbum';
     public const NOT_FOUND_USER = 'NotFoundUser';
