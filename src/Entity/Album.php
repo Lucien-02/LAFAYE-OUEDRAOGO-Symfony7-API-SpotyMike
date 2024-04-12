@@ -179,14 +179,13 @@ class Album
         return $this;
     }
 
-    public function serializer($children = false)
+    public function serializer($owner = false)
     {
         $songsData = [];
         $songs = $this->getSongIdSong();
-        $artist = $this->getArtistUserIdUser()->getId();
-        $client = 1; // ajouter id du client depuis le token
+
         foreach ($songs as $song) {
-            if ($client == $artist || $song->isVisibility() == true) {
+            if ($owner == true || $song->isVisibility() == true) {
                 $songsData[] = $song->serializer();
             }
         }

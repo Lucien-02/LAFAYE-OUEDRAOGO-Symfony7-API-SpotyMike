@@ -13,6 +13,8 @@ use App\Entity\User;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
 use Exception;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 class ArtistController extends AbstractController
 {
@@ -188,20 +190,29 @@ class ArtistController extends AbstractController
     }
 
     #[Route('/artist/{fullname}', name: 'app_artist', methods: ['GET'])]
-    public function get_artist_by_id(string $fullname): JsonResponse
+    public function get_artist_by_id(TokenInterface $token, string $fullname, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             $artist = $this->repository->findOneBy(['fullname' => $fullname]);
-
+            $owner = false;
             if (!$artist) {
                 return $this->json([
                     'error' => true,
                     'message' => 'Une ou plusieurs données sont erronées.'
                 ], 409);
             }
+            $email = $artist->getUserIdUser()->getEmail();
+            $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+            $decodedtoken = $JWTManager->decode($token);
+            $email =  $decodedtoken['username'];
+            $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
+            if ($user->getEmail() == $request_user->getEmail()) {
+                $owner = true;
+            }
             return $this->json([
-                $artist->serializer()
+                "error" => false,
+                "artist" => $artist->serializer($owner),
             ]);
 
             // Gestion des erreurs inattendues

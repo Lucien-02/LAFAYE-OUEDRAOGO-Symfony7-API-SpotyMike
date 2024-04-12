@@ -142,12 +142,12 @@ class Artist
         return $this;
     }
 
-    public function serializer($children = false)
+    public function serializer($owner = false)
     {
         $albumsData = [];
         $albums = $this->getAlbumIdAlbum();
         foreach ($albums as $album) {
-            $albumsData[] = $album->serializer();
+            $albumsData[] = $album->serializer($owner);
         }
 
         return [
