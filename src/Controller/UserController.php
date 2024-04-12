@@ -11,7 +11,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
-use App\Success\SuccessManager;
 use Exception;
 
 class UserController extends AbstractController
@@ -19,13 +18,12 @@ class UserController extends AbstractController
     private $repository;
     private $entityManager;
     private $errorManager;
-    private $successManager;
 
-    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager, SuccessManager $successManager)
+    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager)
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        $this->successManager = $successManager;
+        
         $this->repository = $entityManager->getRepository(User::class);
     }
 
@@ -35,7 +33,7 @@ class UserController extends AbstractController
         try {
             $users = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($users, "utilisateur");
+            $this->errorManager->checkNotFoundEntity($users);
 
             $serializedUsers = [];
             foreach ($users as $user) {
@@ -54,7 +52,7 @@ class UserController extends AbstractController
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
         }
     }
 
@@ -64,14 +62,14 @@ class UserController extends AbstractController
         try {
             $user = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($user, "Utilisateur");
+            $this->errorManager->checkNotFoundEntityId($user);
 
             return $this->json($user->serializer());
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
         }
     }
 
@@ -147,12 +145,15 @@ class UserController extends AbstractController
 
             $user->serializer();
 
-            $this->successManager->validPostRequest("Utilisateur");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Utilisateur créé avec succès."
+            ]);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
         }
     }
 
@@ -163,8 +164,8 @@ class UserController extends AbstractController
         try {
             $user = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($user, "Utilisateur");
-
+            $this->errorManager->checkNotFoundEntityId($user);
+            
             parse_str($request->getContent(), $data);
 
             $email = $data['email'];
@@ -200,12 +201,15 @@ class UserController extends AbstractController
             $this->entityManager->persist($user);
             $this->entityManager->flush();
 
-            $this->successManager->validPutRequest("Utilisateur");
-
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Utilisateur mis à jour avec succès."
+            ]);
+        
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
         }
     }
 
@@ -215,17 +219,20 @@ class UserController extends AbstractController
         try {
             $user = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($user, "Utilisateur");
+            $this->errorManager->checkNotFoundEntityId($user);
 
             $this->entityManager->remove($user);
             $this->entityManager->flush();
 
-            $this->successManager->validDeleteRequest("utilisateur");
-
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Votre utilisateur a été supprimé avec succès."
+            ]);
+        
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
         }
     }
 }

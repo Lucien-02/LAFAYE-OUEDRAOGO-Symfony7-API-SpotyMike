@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Entity\User;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
-use App\Success\SuccessManager;
 use Exception;
 
 class PlaylistController extends AbstractController
@@ -20,13 +19,12 @@ class PlaylistController extends AbstractController
     private $repository;
     private $entityManager;
     private $errorManager;
-    private $successManager;
 
-    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager, SuccessManager $successManager)
+    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager)
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        $this->successManager = $successManager;
+        
         $this->repository = $entityManager->getRepository(Playlist::class);
     }
 
@@ -36,12 +34,15 @@ class PlaylistController extends AbstractController
         try {
             $playlist = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($playlist, "Playlist");
+            $this->errorManager->checkNotFoundEntityId($playlist);
 
             $this->entityManager->remove($playlist);
             $this->entityManager->flush();
 
-            $this->successManager->validDeleteRequest("playlist");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Votre playlist a été supprimée avec succès."
+            ]);
         
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -74,7 +75,10 @@ class PlaylistController extends AbstractController
             $this->entityManager->persist($playlist);
             $this->entityManager->flush();
 
-            $this->successManager->validPostRequest("Playlist");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Playlist créée avec succès."
+            ]);
     
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -89,7 +93,7 @@ class PlaylistController extends AbstractController
         try {
             $playlist = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($playlist, "Playlist");
+            $this->errorManager->checkNotFoundEntityId($playlist);
 
             parse_str($request->getContent(), $data);
 
@@ -105,7 +109,10 @@ class PlaylistController extends AbstractController
             $this->entityManager->persist($playlist);
             $this->entityManager->flush();
 
-            $this->successManager->validPutRequest("Playlist");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Playlist mise à jour avec succès."
+            ]);
     
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -120,7 +127,7 @@ class PlaylistController extends AbstractController
         try {
             $playlist = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($playlist, "Playlist");
+            $this->errorManager->checkNotFoundEntityId($playlist);
 
             return $this->json([
                 'id' => $playlist->getId(),
@@ -143,7 +150,7 @@ class PlaylistController extends AbstractController
         try {
             $playlists = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($playlists, "playlist");
+            $this->errorManager->checkNotFoundEntity($playlists);
 
             $serializedPlaylists = [];
             foreach ($playlists as $playlist) {

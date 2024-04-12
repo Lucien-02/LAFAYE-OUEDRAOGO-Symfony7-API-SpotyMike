@@ -35,16 +35,16 @@ class ErrorManager
             throw new Exception(ErrorTypes::INVALID_PASSWORD_FORMAT);
         }
     }
-    public function checkNotFoundEntity(array $entity, string $entityName)
+    public function checkNotFoundEntity(array $entity)
     {
-        if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_ENTITY, $entityName);
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_ENTITY);
         }
     }
-    public function checkNotFoundEntityId(object $entity, string $entityName)
+    public function checkNotFoundEntityId(object $entity)
     {
-        if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_ENTITY_ID, $entityName);
+        if (!$entity){
+            throw new Exception(ErrorTypes::NOT_FOUND_ENTITY_ID);
         }
     }
     public function checkRequiredAttributes(array $data, array $requiredAttributes)
@@ -194,16 +194,11 @@ class ErrorManager
                 $codeErreur = 409;
                 break;
             case 'NotFoundEntity':
-                if ($variable == "playlist") {
-                    $errorMessage = "Aucune $variable trouvée.";
-                    $codeErreur = 404;
-                } else {
-                    $errorMessage = "Aucun $variable trouvé.";
-                    $codeErreur = 404;
-                }
+                $errorMessage = "Aucune entité trouvée.";
+                $codeErreur = 404;
                 break;
             case 'NotFoundEntityId':
-                $errorMessage = "$variable introuvable.";
+                $errorMessage = "Entité introuvable.";
                 $codeErreur = 404;
                 break;
             case 'NotUniqueArtistName':

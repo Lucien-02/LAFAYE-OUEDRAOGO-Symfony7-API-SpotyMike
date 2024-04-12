@@ -11,7 +11,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Album;
 use App\Error\ErrorManager;
 use App\Error\ErrorTypes;
-use App\Success\SuccessManager;
 use Exception;
 
 class SongController extends AbstractController
@@ -19,14 +18,13 @@ class SongController extends AbstractController
     private $repository;
     private $entityManager;
     private $errorManager;
-    private $successManager;
 
-    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager, SuccessManager $successManager)
+    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager)
     {
         $this->entityManager = $entityManager;
         $this->repository = $entityManager->getRepository(Song::class);
         $this->errorManager = $errorManager;
-        $this->successManager = $successManager;
+        
     }
 
     #[Route('/song/all', name: 'app_songs_get_all', methods: 'GET')]
@@ -35,7 +33,7 @@ class SongController extends AbstractController
         try {
             $songs = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($songs, "son");
+            $this->errorManager->checkNotFoundEntity($songs);
 
             $serializedSongs = [];
             foreach ($songs as $song) {
@@ -69,7 +67,7 @@ class SongController extends AbstractController
         try {
             $song = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($song, "Son");
+            $this->errorManager->checkNotFoundEntityId($song);
 
             return $this->json([
                 'id' => $song->getId(),
@@ -102,7 +100,7 @@ class SongController extends AbstractController
 
             $album = $this->entityManager->getRepository(Album::class)->find($data['album_id']);
 
-            $this->errorManager->checkNotFoundEntityId($album, "Album");
+            $this->errorManager->checkNotFoundEntityId($album);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $song = new Song();
@@ -117,7 +115,10 @@ class SongController extends AbstractController
             $this->entityManager->persist($song);
             $this->entityManager->flush();
 
-            $this->successManager->validPostRequest("Son");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Son créé avec succès."
+            ]);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -132,7 +133,7 @@ class SongController extends AbstractController
         try {
             $song = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($song, "Son");
+            $this->errorManager->checkNotFoundEntityId($song);
 
             parse_str($request->getContent(), $data);
 
@@ -152,8 +153,11 @@ class SongController extends AbstractController
             $this->entityManager->persist($song);
             $this->entityManager->flush();
 
-            $this->successManager->validPutRequest("Son");
-
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Son mis à jour avec succès."
+            ]);
+        
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -167,12 +171,15 @@ class SongController extends AbstractController
         try {
             $song = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($song, "Son");
+            $this->errorManager->checkNotFoundEntityId($song);
 
             $this->entityManager->remove($song);
             $this->entityManager->flush();
 
-            $this->successManager->validDeleteRequest("son");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Votre son a été supprimé avec succès."
+            ]);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
