@@ -33,7 +33,7 @@ class AlbumController extends AbstractController
         try {
             $album = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($album);
+            $this->errorManager->checkNotFoundAlbumId($album);
 
             $this->entityManager->remove($album);
             $this->entityManager->flush();
@@ -91,7 +91,7 @@ class AlbumController extends AbstractController
         try {
             $album = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($album, 'Album');
+            $this->errorManager->checkNotFoundAlbumId($album);
 
             parse_str($request->getContent(), $data);
 
@@ -132,7 +132,7 @@ class AlbumController extends AbstractController
         try {
             $album = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($album, 'Album');
+            $this->errorManager->checkNotFoundAlbumId($album);
 
             return new JsonResponse([
                 $album->serializer()
@@ -151,7 +151,7 @@ class AlbumController extends AbstractController
         try {
             $albums = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($albums, 'album');
+            $this->errorManager->checkNotFoundAlbum($albums);
 
             $serializedAlbums = [];
             foreach ($albums as $album) {

@@ -34,7 +34,7 @@ class ArtistController extends AbstractController
         try {
             $artist = $this->repository->find($id);
             
-            $this->errorManager->checkNotFoundEntityId($artist);
+            $this->errorManager->checkNotFoundArtistId($artist);
 
             $this->entityManager->remove($artist);
             $this->entityManager->flush();
@@ -84,7 +84,7 @@ class ArtistController extends AbstractController
             //Recherche si le user est deja un artiste
             $user = $this->entityManager->getRepository(User::class)->find($data['user_id_user_id']);
 
-            $this->errorManager->checkNotFoundEntityId($user, "Utilisateur");
+            $this->errorManager->checkNotFoundArtistId($user);
 
             $artist = new Artist();
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
@@ -121,7 +121,7 @@ class ArtistController extends AbstractController
         try {
             $artist = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($artist, "Artiste");
+            $this->errorManager->checkNotFoundArtistId($artist);
 
             parse_str($request->getContent(), $data);
 
@@ -172,7 +172,7 @@ class ArtistController extends AbstractController
             foreach ($artists as $artist) {
                 array_push($artist_serialized, $artist->serializer());
             }
-            $this->errorManager->checkNotFoundEntity($artists, "artiste");
+            $this->errorManager->checkNotFoundArtist($artists);
 
             return new JsonResponse($artist_serialized);
 

@@ -35,7 +35,7 @@ class LabelController extends AbstractController
 
         $labels = $this->repository->findAll();
 
-        $this->errorManager->checkNotFoundEntity($labels, "label");
+        $this->errorManager->checkNotFoundLabel($labels);
 
         $serializedLabels = [];
         foreach ($labels as $label) {
@@ -64,7 +64,7 @@ class LabelController extends AbstractController
         try {
             $label = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($label, 'Label');
+            $this->errorManager->checkNotFoundLabelId($label);
 
             return $this->json([
                 'id' => $label->getId(),
@@ -113,7 +113,7 @@ class LabelController extends AbstractController
         try {
             $label = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($label, 'Label');
+            $this->errorManager->checkNotFoundLabelId($label);
 
             parse_str($request->getContent(), $data);
 
@@ -142,7 +142,7 @@ class LabelController extends AbstractController
         try {
             $label = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($label, 'Label');
+            $this->errorManager->checkNotFoundLabelId($label);
 
             $this->entityManager->remove($label);
             $this->entityManager->flush();

@@ -33,7 +33,7 @@ class SongController extends AbstractController
         try {
             $songs = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($songs);
+            $this->errorManager->checkNotFoundSong($songs);
 
             $serializedSongs = [];
             foreach ($songs as $song) {
@@ -67,7 +67,7 @@ class SongController extends AbstractController
         try {
             $song = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($song);
+            $this->errorManager->checkNotFoundSongId($song);
 
             return $this->json([
                 'id' => $song->getId(),
@@ -100,7 +100,7 @@ class SongController extends AbstractController
 
             $album = $this->entityManager->getRepository(Album::class)->find($data['album_id']);
 
-            $this->errorManager->checkNotFoundEntityId($album);
+            $this->errorManager->checkNotFoundSongId($album);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $song = new Song();
@@ -133,7 +133,7 @@ class SongController extends AbstractController
         try {
             $song = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($song);
+            $this->errorManager->checkNotFoundSongId($song);
 
             parse_str($request->getContent(), $data);
 
@@ -171,7 +171,7 @@ class SongController extends AbstractController
         try {
             $song = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($song);
+            $this->errorManager->checkNotFoundSongId($song);
 
             $this->entityManager->remove($song);
             $this->entityManager->flush();

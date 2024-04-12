@@ -34,7 +34,7 @@ class PlaylistController extends AbstractController
         try {
             $playlist = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($playlist);
+            $this->errorManager->checkNotFoundPlaylistId($playlist);
 
             $this->entityManager->remove($playlist);
             $this->entityManager->flush();
@@ -93,7 +93,7 @@ class PlaylistController extends AbstractController
         try {
             $playlist = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($playlist);
+            $this->errorManager->checkNotFoundPlaylistId($playlist);
 
             parse_str($request->getContent(), $data);
 
@@ -127,7 +127,7 @@ class PlaylistController extends AbstractController
         try {
             $playlist = $this->repository->find($id);
 
-            $this->errorManager->checkNotFoundEntityId($playlist);
+            $this->errorManager->checkNotFoundPlaylistId($playlist);
 
             return $this->json([
                 'id' => $playlist->getId(),
@@ -150,7 +150,7 @@ class PlaylistController extends AbstractController
         try {
             $playlists = $this->repository->findAll();
 
-            $this->errorManager->checkNotFoundEntity($playlists);
+            $this->errorManager->checkNotFoundPlaylist($playlists);
 
             $serializedPlaylists = [];
             foreach ($playlists as $playlist) {
