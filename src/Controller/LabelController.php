@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
-use App\Success\SuccessManager;
 use Exception;
 
 class LabelController extends AbstractController
@@ -18,13 +17,12 @@ class LabelController extends AbstractController
     private $repository;
     private $entityManager;
     private $errorManager;
-    private $successManager;
 
-    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager, SuccessManager $successManager)
+    public function __construct(EntityManagerInterface $entityManager, ErrorManager $errorManager)
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        $this->successManager = $successManager;
+        
         $this->repository = $entityManager->getRepository(Label::class);
     }
 
@@ -90,7 +88,10 @@ class LabelController extends AbstractController
             $this->entityManager->persist($label);
             $this->entityManager->flush();
 
-            $this->successManager->validPostRequest("Label");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Label créé avec succès."
+            ]);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -116,7 +117,10 @@ class LabelController extends AbstractController
             $this->entityManager->persist($label);
             $this->entityManager->flush();
 
-            $this->successManager->validPutRequest("Label");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Label mis à jour avec succès."
+            ]);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -136,7 +140,10 @@ class LabelController extends AbstractController
             $this->entityManager->remove($label);
             $this->entityManager->flush();
 
-            $this->successManager->validDeleteRequest("label");
+            return new JsonResponse([
+                'error' => false,
+                'message' => "Votre label a été supprimé avec succès."
+            ]);
             
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
