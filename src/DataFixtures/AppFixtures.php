@@ -35,6 +35,7 @@ class AppFixtures extends Fixture
             $user->setFirstname("User_" . $i);
             $user->setLastname("User_" . $i);
             $user->setEmail("user_" . $i . "@gmail.com");
+            $user->setActive(rand(0, 1));
             $user->setDateBirth(new DateTimeImmutable());
             $user->setCreateAt(new DateTimeImmutable());
             $user->setUpdateAt(new DateTimeImmutable());
