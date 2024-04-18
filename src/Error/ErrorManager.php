@@ -273,51 +273,51 @@ class ErrorManager
                 $codeErreur = 409;
                 break;
             case 'NotFoundArtist':
-                $errorMessage = "Aucun artiste trouvé.";
+                $errorMessage = "Aucun artiste trouvé pour la page demandée.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundAlbum':
-                $errorMessage = "Aucun album trouvé.";
+                $errorMessage = "Aucun album trouvé pour la page demandée.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundUser':
-                $errorMessage = "Aucun utilisateur trouvé.";
+                $errorMessage = "Aucun utilisateur trouvé pour la page demandée.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundLabel':
-                $errorMessage = "Aucun label trouvé.";
+                $errorMessage = "Aucun label trouvé pour la page demandée.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundPlaylist':
-                $errorMessage = "Aucune playlist trouvée.";
+                $errorMessage = "Aucune playlist trouvée pour la page demandée.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundSong':
-                $errorMessage = "Aucun son trouvé.";
+                $errorMessage = "Aucun son trouvé pour la page demandée.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundAlbumId':
-                $errorMessage = "Album introuvable.";
+                $errorMessage = "L'album non trouvé. Vérifiez les informations fournies et réessayez.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundArtistId':
-                $errorMessage = "Artiste introuvable.";
+                $errorMessage = "L'artiste non trouvé. Vérifiez les informations fournies et réessayez.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundSongId':
-                $errorMessage = "Son introuvable.";
+                $errorMessage = "Le son non trouvé. Vérifiez les informations fournies et réessayez.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundUserId':
-                $errorMessage = "Utilisateur introuvable.";
+                $errorMessage = "L'utilisateur non trouvé. Vérifiez les informations fournies et réessayez.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundLabelId':
-                $errorMessage = "Label introuvable.";
+                $errorMessage = "Le label non trouvé. Vérifiez les informations fournies et réessayez.";
                 $codeErreur = 404;
                 break;
             case 'NotFoundPlaylistId':
-                $errorMessage = "Playlist introuvable.";
+                $errorMessage = "La playlist non trouvée. Vérifiez les informations fournies et réessayez.";
                 $codeErreur = 404;
                 break;
             case 'NotUniqueArtistName':
