@@ -24,13 +24,16 @@ class Label
     #[ORM\Column]
     private ?\DateTimeImmutable $updateAt = null;
 
-    #[ORM\ManyToMany(targetEntity: Artist::class, inversedBy: 'labels')]
-    private Collection $artist_idArtist;
+    #[ORM\OneToMany(targetEntity: LabelHasArtist::class, mappedBy: 'label_id')]
+    private Collection $labelHasArtists;
 
     public function __construct()
     {
-        $this->artist_idArtist = new ArrayCollection();
+        $this->labelHasArtists = new ArrayCollection();
     }
+
+
+
 
     public function getId(): ?int
     {
@@ -84,25 +87,31 @@ class Label
     }
 
     /**
-     * @return Collection<int, Artist>
+     * @return Collection<int, LabelHasArtist>
      */
-    public function getArtistIdArtist(): Collection
+    public function getLabelHasArtists(): Collection
     {
-        return $this->artist_idArtist;
+        return $this->labelHasArtists;
     }
 
-    public function addArtistIdArtist(Artist $artistIdArtist): static
+    public function addLabelHasArtist(LabelHasArtist $labelHasArtist): static
     {
-        if (!$this->artist_idArtist->contains($artistIdArtist)) {
-            $this->artist_idArtist->add($artistIdArtist);
+        if (!$this->labelHasArtists->contains($labelHasArtist)) {
+            $this->labelHasArtists->add($labelHasArtist);
+            $labelHasArtist->setLabelId($this);
         }
 
         return $this;
     }
 
-    public function removeArtistIdArtist(Artist $artistIdArtist): static
+    public function removeLabelHasArtist(LabelHasArtist $labelHasArtist): static
     {
-        $this->artist_idArtist->removeElement($artistIdArtist);
+        if ($this->labelHasArtists->removeElement($labelHasArtist)) {
+            // set the owning side to null (unless already changed)
+            if ($labelHasArtist->getLabelId() === $this) {
+                $labelHasArtist->setLabelId(null);
+            }
+        }
 
         return $this;
     }
