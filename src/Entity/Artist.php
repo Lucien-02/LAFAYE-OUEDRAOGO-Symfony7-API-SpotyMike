@@ -35,17 +35,16 @@ class Artist
     #[ORM\OneToMany(targetEntity: Album::class, mappedBy: 'artist_User_idUser', cascade: ['persist', 'remove'])]
     private Collection $album_idAlbum;
 
-
-    #[ORM\ManyToMany(targetEntity: Label::class, mappedBy: 'artist_idArtist')]
-    private Collection $labels;
-
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'Follow')]
     private Collection $Followers;
 
+    #[ORM\OneToMany(targetEntity: LabelHasArtist::class, mappedBy: 'artist_id')]
+    private Collection $ArtisthasLabels;
+
     public function __construct()
     {
-        $this->labels = new ArrayCollection();
         $this->Followers = new ArrayCollection();
+        $this->ArtisthasLabels = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -160,32 +159,7 @@ class Artist
         ];
     }
 
-    /**
-     * @return Collection<int, Label>
-     */
-    public function getLabels(): Collection
-    {
-        return $this->labels;
-    }
 
-    public function addLabel(Label $label): static
-    {
-        if (!$this->labels->contains($label)) {
-            $this->labels->add($label);
-            $label->addArtistIdArtist($this);
-        }
-
-        return $this;
-    }
-
-    public function removeLabel(Label $label): static
-    {
-        if ($this->labels->removeElement($label)) {
-            $label->removeArtistIdArtist($this);
-        }
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, User>
@@ -209,6 +183,36 @@ class Artist
     {
         if ($this->Followers->removeElement($follower)) {
             $follower->removeFollow($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LabelHasArtist>
+     */
+    public function getArtisthasLabels(): Collection
+    {
+        return $this->ArtisthasLabels;
+    }
+
+    public function addArtisthasLabel(LabelHasArtist $artisthasLabel): static
+    {
+        if (!$this->ArtisthasLabels->contains($artisthasLabel)) {
+            $this->ArtisthasLabels->add($artisthasLabel);
+            $artisthasLabel->setArtistId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArtisthasLabel(LabelHasArtist $artisthasLabel): static
+    {
+        if ($this->ArtisthasLabels->removeElement($artisthasLabel)) {
+            // set the owning side to null (unless already changed)
+            if ($artisthasLabel->getArtistId() === $this) {
+                $artisthasLabel->setArtistId(null);
+            }
         }
 
         return $this;
