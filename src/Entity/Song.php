@@ -24,8 +24,6 @@ class Song
     #[ORM\Column(length: 125)]
     private ?string $url = null;
 
-    #[ORM\Column(length: 125)]
-    private ?string $cover = null;
 
     #[ORM\Column]
     private ?bool $visibility = true;
@@ -89,17 +87,7 @@ class Song
         return $this;
     }
 
-    public function getCover(): ?string
-    {
-        return $this->cover;
-    }
 
-    public function setCover(string $cover): static
-    {
-        $this->cover = $cover;
-
-        return $this;
-    }
 
     public function isVisibility(): ?bool
     {
@@ -190,7 +178,7 @@ class Song
         return [
             "id" => $this->getId(),
             "title" => $this->getTitle(),
-            "cover" => $this->getCover(),
+            "cover" => "yolerap",
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
         ];
     }

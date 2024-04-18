@@ -24,7 +24,6 @@ class SongController extends AbstractController
         $this->entityManager = $entityManager;
         $this->repository = $entityManager->getRepository(Song::class);
         $this->errorManager = $errorManager;
-        
     }
 
     #[Route('/song/all', name: 'app_songs_get_all', methods: 'GET')]
@@ -107,7 +106,7 @@ class SongController extends AbstractController
             $song->setAlbum($album);
             $song->setTitle($data['title']);
             $song->setUrl($data['url']);
-            $song->setCover($data['cover']);
+            // $song->setCover($data['cover']);
             $song->setIdSong($data['id_song']);
             $song->setVisibility($data['visibility']);
             $song->setCreateAt($date);
@@ -157,7 +156,7 @@ class SongController extends AbstractController
                 'error' => false,
                 'message' => "Son mis à jour avec succès."
             ]);
-        
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
