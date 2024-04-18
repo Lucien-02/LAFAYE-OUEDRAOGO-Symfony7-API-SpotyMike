@@ -194,7 +194,7 @@ class Album
             "id" => $this->getId(),
             "nom" => $this->getNom(),
             "categ" => $this->getCateg(),
-            // "label" => $this->getCateg(),
+            //"label" => $this->getLabel(),
             "cover" => $this->getCover(),
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
