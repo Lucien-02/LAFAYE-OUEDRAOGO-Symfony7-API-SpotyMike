@@ -35,7 +35,6 @@ class ArtistController extends AbstractController
     {
         $decodedtoken = $JWTManager->decode($token);
         $this->errorManager->Tokennotreset($decodedtoken);
-        $decodedtoken = $JWTManager->decode($token);
         $email =  $decodedtoken['username'];
         $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
         $request_artist = $request_user->getArtist();
@@ -136,7 +135,7 @@ class ArtistController extends AbstractController
                     'success' => true,
                     'message' => "Votre compte d'artiste a été créé avec succès. Bienvenue dans notre commmunauté d'artistes !",
                     'artist_id' => $artist->getId()
-                ]);
+                ], 201);
             }
 
 
@@ -149,14 +148,10 @@ class ArtistController extends AbstractController
                 ], 409);
             }
 
-
-
             //Recherche si le user est deja un artiste
             $user = $this->entityManager->getRepository(User::class)->find($data['user_id_user_id']);
 
             $this->errorManager->checkNotFoundArtistId($user);
-
-
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -164,7 +159,6 @@ class ArtistController extends AbstractController
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
     }
-
 
     #[Route('/artist', name: 'app_artists_get', methods: ['GET'])]
     public function get_all_artists(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
