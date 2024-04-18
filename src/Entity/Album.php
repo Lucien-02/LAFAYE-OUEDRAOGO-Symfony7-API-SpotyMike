@@ -25,8 +25,7 @@ class Album
     #[ORM\Column(length: 20)]
     private ?string $categ = null;
 
-    #[ORM\Column(length: 125)]
-    private ?string $cover = null;
+
 
     #[ORM\Column]
     private ?int $year = 2024;
@@ -89,17 +88,7 @@ class Album
         return $this;
     }
 
-    public function getCover(): ?string
-    {
-        return $this->cover;
-    }
 
-    public function setCover(string $cover): static
-    {
-        $this->cover = $cover;
-
-        return $this;
-    }
 
     public function getYear(): ?int
     {
@@ -194,8 +183,8 @@ class Album
             "id" => $this->getId(),
             "nom" => $this->getNom(),
             "categ" => $this->getCateg(),
-            //"label" => $this->getLabel(),
-            "cover" => $this->getCover(),
+            // "label" => $this->getLabel(),
+            "cover" => "yo",
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
             "songs" => $songsData,

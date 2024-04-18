@@ -25,7 +25,7 @@ class AlbumController extends AbstractController
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        
+
         $this->repository = $entityManager->getRepository(Album::class);
     }
 
@@ -63,7 +63,7 @@ class AlbumController extends AbstractController
             $this->errorManager->TokenNotReset($decodedtoken);
             
             parse_str($request->getContent(), $data);
-            
+
             $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year', 'idalbum']);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
@@ -72,7 +72,7 @@ class AlbumController extends AbstractController
             $album->setArtistUserIdUser($artist);
             $album->setNom($data['nom']);
             $album->setCateg($data['categ']);
-            $album->setCover($data['cover']);
+            //$album->setCover($data['cover']);
             $album->setYear($data['year']);
             $album->setIdAlbum($data['idalbum']);
             $album->setCreateAt($date);
