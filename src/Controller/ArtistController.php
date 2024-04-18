@@ -53,7 +53,7 @@ class ArtistController extends AbstractController
         return new JsonResponse([
             'error' => false,
             'message' => "Le compte artiste a été désactivé avec succès."
-        ]);
+        ], 200);
 
         // Gestion des erreurs inattendues
         throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -104,7 +104,7 @@ class ArtistController extends AbstractController
                 return new JsonResponse([
                     'error' => false,
                     'message' => "Artiste mis à jour avec succès."
-                ]);
+                ], 200);
             } else {
                 //Données manquantes
                 $this->errorManager->checkRequiredAttributes($data, ['fullname', 'label']);
@@ -177,7 +177,7 @@ class ArtistController extends AbstractController
                 "error" => false,
                 "artists" => $artist_serialized,
                 "message" => 'Informations des artistes récupérées avec succès.',
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -226,7 +226,7 @@ class ArtistController extends AbstractController
             return $this->json([
                 "error" => false,
                 "artist" => $artist->serializer($owner),
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);

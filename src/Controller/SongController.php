@@ -82,7 +82,7 @@ class SongController extends AbstractController
                 'url' => $song->getUrl(),
                 'cover' => $song->getCover(),
                 'visibility' => $song->isVisibility()
-            ]);
+            ], 200);
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -118,7 +118,7 @@ class SongController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Son créé avec succès."
-            ]);
+            ], 201);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -156,7 +156,7 @@ class SongController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Son mis à jour avec succès."
-            ]);
+            ], 200);
         
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -179,7 +179,7 @@ class SongController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Votre son a été supprimé avec succès."
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);

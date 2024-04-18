@@ -42,7 +42,7 @@ class PlaylistController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Votre playlist a été supprimée avec succès."
-            ]);
+            ], 200);
         
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -78,7 +78,7 @@ class PlaylistController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Playlist créée avec succès."
-            ]);
+            ], 201);
     
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -112,7 +112,7 @@ class PlaylistController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Playlist mise à jour avec succès."
-            ]);
+            ], 200);
     
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -135,7 +135,7 @@ class PlaylistController extends AbstractController
                 'public' => $playlist->isPublic(),
                 'create_at' => $playlist->getCreateAt(),
                 'update_at' => $playlist->getUpdateAt(),
-            ]);
+            ], 200);
     
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);

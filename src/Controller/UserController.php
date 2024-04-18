@@ -244,7 +244,7 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Votre utilisateur a été supprimé avec succès."
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -273,7 +273,7 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'success' => true,
                 'message' => "Votre compte a été désactivé avec succès. Nous sommes désolés de vous voir partir."
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
