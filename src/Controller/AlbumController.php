@@ -23,7 +23,7 @@ class AlbumController extends AbstractController
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        
+
         $this->repository = $entityManager->getRepository(Album::class);
     }
 
@@ -42,7 +42,7 @@ class AlbumController extends AbstractController
                 'error' => false,
                 'message' => "Votre album a été supprimé avec succès."
             ]);
-            
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -55,7 +55,7 @@ class AlbumController extends AbstractController
     {
         try {
             parse_str($request->getContent(), $data);
-            
+
             $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year', 'idalbum']);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
@@ -64,7 +64,7 @@ class AlbumController extends AbstractController
             $album->setArtistUserIdUser($artist);
             $album->setNom($data['nom']);
             $album->setCateg($data['categ']);
-            $album->setCover($data['cover']);
+            //$album->setCover($data['cover']);
             $album->setYear($data['year']);
             $album->setIdAlbum($data['idalbum']);
             $album->setCreateAt($date);
@@ -77,7 +77,7 @@ class AlbumController extends AbstractController
                 'error' => false,
                 'message' => "Album créé avec succès."
             ]);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -118,7 +118,7 @@ class AlbumController extends AbstractController
                 'error' => false,
                 'message' => "Album mis à jour avec succès."
             ]);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -137,7 +137,7 @@ class AlbumController extends AbstractController
             return new JsonResponse([
                 $album->serializer()
             ]);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -165,7 +165,7 @@ class AlbumController extends AbstractController
             }
 
             return new JsonResponse($serializedAlbums);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
