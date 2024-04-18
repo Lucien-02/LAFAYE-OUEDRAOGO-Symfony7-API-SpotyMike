@@ -229,6 +229,10 @@ class ErrorManager
                 $errorMessage = 'Email/password manquants.';
                 $codeErreur = 400;
                 break;
+            case 'MissingAlbumId':
+                $errorMessage = "L'id de l'album est obligatoire pour cette requête.";
+                $codeErreur = 400;
+                break;
             case 'InvalidEmail':
                 $errorMessage = "Le format de l'email est invalide.";
                 $codeErreur = 400;
