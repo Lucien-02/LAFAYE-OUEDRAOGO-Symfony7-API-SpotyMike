@@ -18,7 +18,7 @@ class ErrorManager
         $this->cache = $cache;
     }
 
-    public function Tokennotreset(array $decodedtoken)
+    public function TokenNotReset(array $decodedtoken)
     {
         if (isset($decodedtoken['type'])) {
             if ($decodedtoken['type'] == 'reset-password') {
