@@ -34,7 +34,7 @@ class ArtistController extends AbstractController
     public function delete_artist(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         $decodedtoken = $JWTManager->decode($token);
-        $this->errorManager->Tokennotreset($decodedtoken);
+        $this->errorManager->TokenNotReset($decodedtoken);
         $email =  $decodedtoken['username'];
         $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
         $request_artist = $request_user->getArtist();
@@ -65,7 +65,7 @@ class ArtistController extends AbstractController
         try {
             parse_str($request->getContent(), $data);
             $decodedtoken = $JWTManager->decode($token);
-            $this->errorManager->Tokennotreset($decodedtoken);
+            $this->errorManager->TokenNotReset($decodedtoken);
             $email =  $decodedtoken['username'];
             $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             $artist = $request_user->getArtist();
@@ -165,7 +165,7 @@ class ArtistController extends AbstractController
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
-            $this->errorManager->Tokennotreset($decodedtoken);
+            $this->errorManager->TokenNotReset($decodedtoken);
             $artists = $this->repository->findAll();
             $artist_serialized = [];
             foreach ($artists as $artist) {
@@ -216,7 +216,7 @@ class ArtistController extends AbstractController
             $email = $artist->getUserIdUser()->getEmail();
             $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             $decodedtoken = $JWTManager->decode($token);
-            $this->errorManager->Tokennotreset($decodedtoken);
+            $this->errorManager->TokenNotReset($decodedtoken);
             $email =  $decodedtoken['username'];
             $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
