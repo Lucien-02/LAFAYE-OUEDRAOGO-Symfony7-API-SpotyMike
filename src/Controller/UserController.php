@@ -152,7 +152,7 @@ class UserController extends AbstractController
                 'error' => false,
                 'message' => "L'utilisateur a bien été créé avec succès.",
                 'user' => $user->serializer()
-            ]);
+            ], 201);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -221,7 +221,7 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Votre inscription a bien été prise en compte."
-            ]);
+            ], 201);
             
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
