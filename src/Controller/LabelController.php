@@ -30,24 +30,81 @@ class LabelController extends AbstractController
     }
 
     #[Route('/label/all', name: 'app_labels_get_all', methods: 'GET')]
-    public function getLabels(TokenInterface $token, JWTTokenManagerInterface $JWTManager)
+    public function getLabels(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager)
     {
+        try {
+            $decodedtoken = $JWTManager->decode($token);
+            $this->errorManager->TokenNotReset($decodedtoken);
+            
+            parse_str($request->getContent(), $data);
 
-        $labels = $this->repository->findAll();
+            $labelsPerPage = 5;
+            $numPage = $data["page"];
 
-        $this->errorManager->checkNotFoundLabel($labels);
+            // Récupération page demandée
+            $page = $request->query->getInt('page', $numPage);
 
-        $serializedLabels = [];
-        foreach ($labels as $label) {
-            $serializedLabels[] = [
-                'id' => $label->getId(),
-                'nom' => $label->getNom()
+            $offset = ($page - 1) * $labelsPerPage;
+
+            $labels = $this->repository->findBy([], null, $labelsPerPage, $offset);
+
+            $this->errorManager->checkNotFoundLabel($labels);
+
+            $label_serialized = [];
+            foreach ($labels as $label) {
+                array_push($label_serialized, $label->serializer());
+            }
+
+            $totalLabels = count($this->repository->findAll());
+
+            $totalPages = ceil($totalLabels / $labelsPerPage);
+
+            // Vérif si page suivante existante
+            $nextPage = null;
+            if ($nextPage < $totalPages) {
+                $nextPage = $page + 1;
+
+                $nextPageOffset = ($nextPage - 1) * $labelsPerPage;
+
+                // Récupération labels page suivante
+                $nextPageLabels = $this->repository->findBy([], null, $labelsPerPage, $nextPageOffset);
+
+                $nextPageLabelsSerialized = [];
+                foreach ($nextPageLabels as $label) {
+                    array_push($nextPageLabelsSerialized, $label->serializer());
+                }
+            }
+
+            if (!empty($label_serialized)) {
+                $currentSerializedContent = $label_serialized;
+                $currentPage = $page;
+            } else {
+                // Sinon, afficher les valeurs de $nextPageLabelsSerialized
+                $currentSerializedContent = $nextPageLabelsSerialized;
+                $currentPage = $nextPage;
+            }
+ 
+            $response = [
+                "error" => false,
+                "labels" => $currentSerializedContent,
+                "pagination" => [
+                    "currentPage" => $currentPage,
+                    "totalPages" => $totalPages,
+                    "totalLabels" => $totalLabels
+                ]
             ];
+
+            if ($page = $nextPage) {
+                $label_serialized = null;
+            }
+
+            return $this->json($response, 200);
+
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
-
-        $decodedtoken = $JWTManager->decode($token);
-
-        return new JsonResponse($serializedLabels);
     }
 
     #[Route('/label/{id}', name: 'app_label_get', methods: 'GET')]
