@@ -34,8 +34,7 @@ class ArtistController extends AbstractController
     public function delete_artist(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         $decodedtoken = $JWTManager->decode($token);
-        $this->errorManager->Tokennotreset($decodedtoken);
-        $decodedtoken = $JWTManager->decode($token);
+        $this->errorManager->TokenNotReset($decodedtoken);
         $email =  $decodedtoken['username'];
         $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
         $request_artist = $request_user->getArtist();
@@ -54,7 +53,7 @@ class ArtistController extends AbstractController
         return new JsonResponse([
             'error' => false,
             'message' => "Le compte artiste a été désactivé avec succès."
-        ]);
+        ], 200);
 
         // Gestion des erreurs inattendues
         throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -66,7 +65,7 @@ class ArtistController extends AbstractController
         try {
             parse_str($request->getContent(), $data);
             $decodedtoken = $JWTManager->decode($token);
-            $this->errorManager->Tokennotreset($decodedtoken);
+            $this->errorManager->TokenNotReset($decodedtoken);
             $email =  $decodedtoken['username'];
             $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             $artist = $request_user->getArtist();
@@ -105,7 +104,7 @@ class ArtistController extends AbstractController
                 return new JsonResponse([
                     'error' => false,
                     'message' => "Artiste mis à jour avec succès."
-                ]);
+                ], 200);
             } else {
                 //Données manquantes
                 $this->errorManager->checkRequiredAttributes($data, ['fullname', 'label']);
@@ -136,7 +135,7 @@ class ArtistController extends AbstractController
                     'success' => true,
                     'message' => "Votre compte d'artiste a été créé avec succès. Bienvenue dans notre commmunauté d'artistes !",
                     'artist_id' => $artist->getId()
-                ]);
+                ], 201);
             }
 
 
@@ -149,14 +148,10 @@ class ArtistController extends AbstractController
                 ], 409);
             }
 
-
-
             //Recherche si le user est deja un artiste
             $user = $this->entityManager->getRepository(User::class)->find($data['user_id_user_id']);
 
             $this->errorManager->checkNotFoundArtistId($user);
-
-
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -165,13 +160,12 @@ class ArtistController extends AbstractController
         }
     }
 
-
     #[Route('/artist', name: 'app_artists_get', methods: ['GET'])]
     public function get_all_artists(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
-            $this->errorManager->Tokennotreset($decodedtoken);
+            $this->errorManager->TokenNotReset($decodedtoken);
             $artists = $this->repository->findAll();
             $artist_serialized = [];
             foreach ($artists as $artist) {
@@ -183,7 +177,7 @@ class ArtistController extends AbstractController
                 "error" => false,
                 "artists" => $artist_serialized,
                 "message" => 'Informations des artistes récupérées avec succès.',
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -222,7 +216,7 @@ class ArtistController extends AbstractController
             $email = $artist->getUserIdUser()->getEmail();
             $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             $decodedtoken = $JWTManager->decode($token);
-            $this->errorManager->Tokennotreset($decodedtoken);
+            $this->errorManager->TokenNotReset($decodedtoken);
             $email =  $decodedtoken['username'];
             $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
@@ -232,7 +226,7 @@ class ArtistController extends AbstractController
             return $this->json([
                 "error" => false,
                 "artist" => $artist->serializer($owner),
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);

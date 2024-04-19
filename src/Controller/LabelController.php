@@ -61,7 +61,7 @@ class LabelController extends AbstractController
             return $this->json([
                 'id' => $label->getId(),
                 'nom' => $label->getNom()
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -90,7 +90,7 @@ class LabelController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Label créé avec succès."
-            ]);
+            ], 201);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -119,7 +119,7 @@ class LabelController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Label mis à jour avec succès."
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -142,7 +142,7 @@ class LabelController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Votre label a été supprimé avec succès."
-            ]);
+            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);

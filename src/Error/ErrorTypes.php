@@ -10,6 +10,7 @@ class ErrorTypes
     public const MISSING_ATTRIBUTES_LOGIN = 'MissingAttributesLogin';
     public const MISSING_EMAIL = 'MissingEmail';
     public const MISSING_PASSWORD = 'MissingPassword';
+    public const MISSING_ALBUM_ID = 'MissingAlbumId';
     public const INVALID_EMAIL = 'InvalidEmail';
     public const INVALID_PASSWORD_FORMAT = 'InvalidPasswordFormat';
     public const NOT_ACTIVE_USER = 'NotActiveUser';

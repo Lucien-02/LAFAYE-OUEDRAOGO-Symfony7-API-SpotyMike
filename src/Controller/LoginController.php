@@ -76,7 +76,7 @@ class LoginController extends  AbstractController
                     'message' => "L'utilisateur a été authentifié avec succès",
                     'user' => $user->serializer(),
                     'token' => $token,
-                ]);
+                ], 200);
             }
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -118,7 +118,7 @@ class LoginController extends  AbstractController
                     'success' => true,
                     'token' => $token,
                     'message' => "Un email de réinitialisation de mot de passe a été envoyé à votre adresse email. Veuiller suivre les instructions contenues dans l'email pour réinitialiser votre mot de passe.",
-                ]);
+                ], 200);
             }
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -178,7 +178,7 @@ class LoginController extends  AbstractController
             return new JsonResponse([
                 'success' => true,
                 'message' => "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
-            ]);
+            ], 200);
 
 
             // Gestion des erreurs inattendues
