@@ -11,6 +11,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
+use DateTime;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -81,9 +82,9 @@ class UserController extends AbstractController
     {
         try {
             parse_str($request->getContent(), $data);
-            //vérification attribut nécessaire
 
-            $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth']);
+            //vérification attribut nécessaire
+            $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth', 'avatar']);
 
             $firstname = $data['firstname'];
             $lastname = $data['lastname'];
@@ -108,8 +109,11 @@ class UserController extends AbstractController
             $this->errorManager->isValidPassword($password);
             // vérif format date
             $this->errorManager->isValidDateFormat($birthday, 'd/m/Y');
+            
+            $dateOfBirth = \DateTime::createFromFormat('d/m/Y', $birthday)->format('Y-m-d');
+            
             // vérif age
-            $this->errorManager->isAgeValid($birthday, $ageMin);
+            $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
 
             //vérif tel
             if (isset($data['tel'])) {
@@ -127,15 +131,14 @@ class UserController extends AbstractController
             }
 
             $user = new User();
-
+            
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $user->setCreateAt($date);
             $user->setUpdateAt($date);
 
             $user->setFirstname($firstname);
             $user->setLastname($lastname);
-            $dateOfBirth = new \DateTimeImmutable($birthday);
-            $user->setDateBirth($dateOfBirth);
+            $user->setDateBirth(new DateTime($dateOfBirth));
             $user->setSexe($sexe);
             $user->setEmail($email);
             $hash = $passwordHash->hashPassword($user, $password);
@@ -146,7 +149,13 @@ class UserController extends AbstractController
 
             $this->entityManager->flush();
 
-            $user->serializer();
+            $explodeData = explode(",", $data['avatar']);
+            if(count($explodeData) == 2){
+                $file = base64_decode($explodeData[1]);
+                $chemin = $this->getParameter('upload_directory') . '/' . $user->getEmail();
+                mkdir($chemin);
+                file_put_contents($chemin . '/file.png', $file);
+            }
 
             return new JsonResponse([
                 'error' => false,
