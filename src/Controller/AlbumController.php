@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
 use Exception;
+use UrlGeneratorInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
@@ -64,9 +65,11 @@ class AlbumController extends AbstractController
             
             parse_str($request->getContent(), $data);
 
-            $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year', 'idalbum']);
+            $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year']);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            $uniqueId = uniqid();
+            
             $album = new Album();
             $artist = $this->entityManager->getRepository(Artist::class)->find(1);
             $album->setArtistUserIdUser($artist);
@@ -74,7 +77,7 @@ class AlbumController extends AbstractController
             $album->setCateg($data['categ']);
             //$album->setCover($data['cover']);
             $album->setYear($data['year']);
-            $album->setIdAlbum($data['idalbum']);
+            $album->setIdAlbum($uniqueId);
             $album->setCreateAt($date);
             $album->setUpdateAt($date);
 
@@ -238,13 +241,23 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/albums', name: 'app_albums_get', methods: ['GET'])]
-    public function get_all_albums(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function get_all_albums(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
 
-            $albums = $this->repository->findAll();
+            parse_str($request->getContent(), $data);
+
+            $albumsPerPage = 5;
+            $numPage = $data["page"];
+
+            // Récupération page demandée
+            $page = $request->query->getInt('page', $numPage);
+
+            $offset = ($page - 1) * $albumsPerPage;
+
+            $albums = $this->repository->findBy([], null, $albumsPerPage, $offset);
 
             $this->errorManager->checkNotFoundAlbum($albums);
 
@@ -253,10 +266,50 @@ class AlbumController extends AbstractController
                 array_push($album_serialized, $album->serializer());
             }
 
-            return $this->json([
+            $totalAlbums = count($this->repository->findAll());
+
+            $totalPages = ceil($totalAlbums / $albumsPerPage);
+
+            // Vérif si page suivante existante
+            $nextPage = null;
+            if ($nextPage < $totalPages) {
+                $nextPage = $page + 1;
+
+                $nextPageOffset = ($nextPage - 1) * $albumsPerPage;
+
+                // Récupération albums page suivante
+                $nextPageAlbums = $this->repository->findBy([], null, $albumsPerPage, $nextPageOffset);
+
+                $nextPageAlbumsSerialized = [];
+                foreach ($nextPageAlbums as $album) {
+                    array_push($nextPageAlbumsSerialized, $album->serializer());
+                }
+            }
+
+            if (!empty($album_serialized)) {
+                $currentSerializedContent = $album_serialized;
+                $currentPage = $page;
+            } else {
+                // Sinon, afficher les valeurs de $nextPageAlbumsSerialized
+                $currentSerializedContent = $nextPageAlbumsSerialized;
+                $currentPage = $nextPage;
+            }
+ 
+            $response = [
                 "error" => false,
-                "albums" => $album_serialized
-            ], 200);
+                "albums" => $currentSerializedContent,
+                "pagination" => [
+                    "currentPage" => $currentPage,
+                    "totalPages" => $totalPages,
+                    "totalAlbums" => $totalAlbums
+                ]
+            ];
+
+            if ($page = $nextPage) {
+                $album_serialized = null;
+            }
+
+            return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);

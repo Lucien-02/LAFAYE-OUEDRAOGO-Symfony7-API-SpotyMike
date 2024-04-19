@@ -177,4 +177,15 @@ class Playlist
 
         return $this;
     }
+
+    public function serializer()
+    {
+        return [
+            "id" => $this->getId(),
+            "title" => $this->getTitle(),
+            "public" => $this->isPublic(),
+            "createAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
+            "updateAt" => $this->getUpdateAt()->format('Y-m-d H:i:s')
+        ];
+    }
 }

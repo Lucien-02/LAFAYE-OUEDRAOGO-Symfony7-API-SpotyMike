@@ -8,6 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use App\Entity\Album;
 use App\Error\ErrorManager;
 use App\Error\ErrorTypes;
@@ -27,31 +29,75 @@ class SongController extends AbstractController
     }
 
     #[Route('/song/all', name: 'app_songs_get_all', methods: 'GET')]
-    public function getSongs()
+    public function getSongs(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
-            $songs = $this->repository->findAll();
+            $decodedtoken = $JWTManager->decode($token);
+            $this->errorManager->TokenNotReset($decodedtoken);
+            
+            parse_str($request->getContent(), $data);
+
+            $songsPerPage = 5;
+            $numPage = $data["page"];
+
+            // Récupération page demandée
+            $page = $request->query->getInt('page', $numPage);
+
+            $offset = ($page - 1) * $songsPerPage;
+
+            $songs = $this->repository->findBy([], null, $songsPerPage, $offset);
 
             $this->errorManager->checkNotFoundSong($songs);
 
-            $serializedSongs = [];
+            $song_serialized = [];
             foreach ($songs as $song) {
-                $serializedSongs[] = [
-                    'id' => $song->getId(),
-                    'album' => [
-                        'id' => $song->getAlbum()->getId(),
-                        'nom' => $song->getAlbum()->getNom(),
-                        'categ' => $song->getAlbum()->getCateg(),
-                        'cover' => $song->getAlbum()->getCover(),
-                        'year' => $song->getAlbum()->getYear(),
-                    ],
-                    'title' => $song->getTitle(),
-                    'url' => $song->getUrl(),
-                    'cover' => $song->getCover(),
-                    'visibility' => $song->isVisibility()
-                ];
+                array_push($song_serialized, $song->serializer());
             }
-            return new JsonResponse($serializedSongs);
+
+            $totalSongs = count($this->repository->findAll());
+
+            $totalPages = ceil($totalSongs / $songsPerPage);
+
+            // Vérif si page suivante existante
+            $nextPage = null;
+            if ($nextPage < $totalPages) {
+                $nextPage = $page + 1;
+
+                $nextPageOffset = ($nextPage - 1) * $songsPerPage;
+
+                // Récupération songs page suivante
+                $nextPageSongs = $this->repository->findBy([], null, $songsPerPage, $nextPageOffset);
+
+                $nextPageSongsSerialized = [];
+                foreach ($nextPageSongs as $song) {
+                    array_push($nextPageSongsSerialized, $song->serializer());
+                }
+            }
+
+            if (!empty($song_serialized)) {
+                $currentSerializedContent = $song_serialized;
+                $currentPage = $page;
+            } else {
+                // Sinon, afficher les valeurs de $nextPageSongsSerialized
+                $currentSerializedContent = $nextPageSongsSerialized;
+                $currentPage = $nextPage;
+            }
+ 
+            $response = [
+                "error" => false,
+                "songs" => $currentSerializedContent,
+                "pagination" => [
+                    "currentPage" => $currentPage,
+                    "totalPages" => $totalPages,
+                    "totalSongs" => $totalSongs
+                ]
+            ];
+
+            if ($page = $nextPage) {
+                $song_serialized = null;
+            }
+
+            return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -102,12 +148,14 @@ class SongController extends AbstractController
             $this->errorManager->checkNotFoundSongId($album);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            $uniqueId = uniqid();
+
             $song = new Song();
             $song->setAlbum($album);
             $song->setTitle($data['title']);
             $song->setUrl($data['url']);
             // $song->setCover($data['cover']);
-            $song->setIdSong($data['id_song']);
+            $song->setIdSong($uniqueId);
             $song->setVisibility($data['visibility']);
             $song->setCreateAt($date);
 

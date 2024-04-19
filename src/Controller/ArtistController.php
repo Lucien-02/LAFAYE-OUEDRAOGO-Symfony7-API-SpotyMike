@@ -66,27 +66,25 @@ class ArtistController extends AbstractController
             parse_str($request->getContent(), $data);
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            $email =  $decodedtoken['username'];
+            $email = $decodedtoken['username'];
             $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             $artist = $request_user->getArtist();
             $dateBirth = $request_user->getDateBirth();
-            $birthday = $dateBirth->format('d/m/Y ');
+            $birthday = $dateBirth->format('d/m/Y');
 
             if ($artist !== null) {
                 if (isset($data['fullname']) && !is_string($data['fullname'])) {
 
                     return new JsonResponse([
                         'error' => true,
-                        'message' => "Les donné fournie sont invalide .Veuiller vérifier les donné soumise.",
-
+                        'message' => "Les données fournies sont invalides. Veuillez vérifier les données soumises.",
                     ]);
                 }
                 if (isset($data['description']) && !is_string($data['description'])) {
 
                     return new JsonResponse([
                         'error' => true,
-                        'message' => "Les donné fournie sont invalide .Veuiller vérifier les donné soumise.",
-
+                        'message' => "Les données fournies sont invalides. Veuillez vérifier les données soumises.",
                     ]);
                 }
                 $this->errorManager->checkNotFoundArtistId($artist);
@@ -161,23 +159,76 @@ class ArtistController extends AbstractController
     }
 
     #[Route('/artist', name: 'app_artists_get', methods: ['GET'])]
-    public function get_all_artists(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function get_all_artists(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            $artists = $this->repository->findAll();
+            
+            parse_str($request->getContent(), $data);
+
+            $artistsPerPage = 5;
+            $numPage = $data["page"];
+
+            // Récupération page demandée
+            $page = $request->query->getInt('page', $numPage);
+
+            $offset = ($page - 1) * $artistsPerPage;
+
+            $artists = $this->repository->findBy([], null, $artistsPerPage, $offset);
+
+            $this->errorManager->checkNotFoundArtist($artists);
+
             $artist_serialized = [];
             foreach ($artists as $artist) {
                 array_push($artist_serialized, $artist->serializer());
             }
-            $this->errorManager->checkNotFoundArtist($artists);
 
-            return $this->json([
+            $totalArtists = count($this->repository->findAll());
+
+            $totalPages = ceil($totalArtists / $artistsPerPage);
+
+            // Vérif si page suivante existante
+            $nextPage = null;
+            if ($nextPage < $totalPages) {
+                $nextPage = $page + 1;
+
+                $nextPageOffset = ($nextPage - 1) * $artistsPerPage;
+
+                // Récupération artists page suivante
+                $nextPageArtists = $this->repository->findBy([], null, $artistsPerPage, $nextPageOffset);
+
+                $nextPageArtistsSerialized = [];
+                foreach ($nextPageArtists as $artist) {
+                    array_push($nextPageArtistsSerialized, $artist->serializer());
+                }
+            }
+
+            if (!empty($artist_serialized)) {
+                $currentSerializedContent = $artist_serialized;
+                $currentPage = $page;
+            } else {
+                // Sinon, afficher les valeurs de $nextPageArtistsSerialized
+                $currentSerializedContent = $nextPageArtistsSerialized;
+                $currentPage = $nextPage;
+            }
+ 
+            $response = [
                 "error" => false,
-                "artists" => $artist_serialized,
+                "artists" => $currentSerializedContent,
                 "message" => 'Informations des artistes récupérées avec succès.',
-            ], 200);
+                "pagination" => [
+                    "currentPage" => $currentPage,
+                    "totalPages" => $totalPages,
+                    "totalArtists" => $totalArtists
+                ]
+            ];
+
+            if ($page = $nextPage) {
+                $artist_serialized = null;
+            }
+
+            return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
