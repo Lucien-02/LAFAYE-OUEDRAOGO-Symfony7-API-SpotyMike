@@ -102,12 +102,14 @@ class SongController extends AbstractController
             $this->errorManager->checkNotFoundSongId($album);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            $uniqueId = uniqid();
+
             $song = new Song();
             $song->setAlbum($album);
             $song->setTitle($data['title']);
             $song->setUrl($data['url']);
             // $song->setCover($data['cover']);
-            $song->setIdSong($data['id_song']);
+            $song->setIdSong($uniqueId);
             $song->setVisibility($data['visibility']);
             $song->setCreateAt($date);
 

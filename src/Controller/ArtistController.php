@@ -66,27 +66,25 @@ class ArtistController extends AbstractController
             parse_str($request->getContent(), $data);
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            $email =  $decodedtoken['username'];
+            $email = $decodedtoken['username'];
             $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             $artist = $request_user->getArtist();
             $dateBirth = $request_user->getDateBirth();
-            $birthday = $dateBirth->format('d/m/Y ');
+            $birthday = $dateBirth->format('d/m/Y');
 
             if ($artist !== null) {
                 if (isset($data['fullname']) && !is_string($data['fullname'])) {
 
                     return new JsonResponse([
                         'error' => true,
-                        'message' => "Les donné fournie sont invalide .Veuiller vérifier les donné soumise.",
-
+                        'message' => "Les données fournies sont invalides. Veuillez vérifier les données soumises.",
                     ]);
                 }
                 if (isset($data['description']) && !is_string($data['description'])) {
 
                     return new JsonResponse([
                         'error' => true,
-                        'message' => "Les donné fournie sont invalide .Veuiller vérifier les donné soumise.",
-
+                        'message' => "Les données fournies sont invalides. Veuillez vérifier les données soumises.",
                     ]);
                 }
                 $this->errorManager->checkNotFoundArtistId($artist);

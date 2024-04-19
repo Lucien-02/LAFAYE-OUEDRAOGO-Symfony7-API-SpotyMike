@@ -67,6 +67,8 @@ class AlbumController extends AbstractController
             $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year', 'idalbum']);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            $uniqueId = uniqid();
+            
             $album = new Album();
             $artist = $this->entityManager->getRepository(Artist::class)->find(1);
             $album->setArtistUserIdUser($artist);
@@ -74,7 +76,7 @@ class AlbumController extends AbstractController
             $album->setCateg($data['categ']);
             //$album->setCover($data['cover']);
             $album->setYear($data['year']);
-            $album->setIdAlbum($data['idalbum']);
+            $album->setIdAlbum($uniqueId);
             $album->setCreateAt($date);
             $album->setUpdateAt($date);
 

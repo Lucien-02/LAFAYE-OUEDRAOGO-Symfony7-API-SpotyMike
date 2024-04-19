@@ -60,13 +60,14 @@ class PlaylistController extends AbstractController
             $this->errorManager->checkRequiredAttributes($data, ['title', 'public', 'idplaylist']);
             
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            $uniqueId = uniqid();
         
             //Recherche si le user est deja un artiste
             $user = $this->entityManager->getRepository(User::class)->find($data['user_id']);
 
             $playlist = new Playlist();
             $playlist->setTitle($data['title']);
-            $playlist->setIdPlaylist($data['idplaylist']);
+            $playlist->setIdPlaylist($uniqueId);
             $playlist->setPublic($data['public']);
             $playlist->setUser($user);
             $playlist->setCreateAt($date);
