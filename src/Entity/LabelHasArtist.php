@@ -9,10 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: LabelHasArtistRepository::class)]
 class LabelHasArtist
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $joining_date = null;
@@ -20,16 +17,16 @@ class LabelHasArtist
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $living_date = null;
 
+    #[ORM\Id]
     #[ORM\ManyToOne(inversedBy: 'labelHasArtists')]
+    #[ORM\JoinColumn(name: 'label_id', referencedColumnName: 'id')]
     private ?Label $label_id = null;
 
+    #[ORM\Id]
     #[ORM\ManyToOne(inversedBy: 'ArtisthasLabels')]
+    #[ORM\JoinColumn(name: 'artist_id', referencedColumnName: 'id')]
     private ?Artist $artist_id = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getJoiningDate(): ?\DateTimeInterface
     {
