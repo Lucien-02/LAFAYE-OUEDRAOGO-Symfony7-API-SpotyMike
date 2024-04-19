@@ -32,31 +32,80 @@ class UserController extends AbstractController
     }
 
     #[Route('/user/all', name: 'app_users_get_all', methods: 'GET')]
-    public function getUsers(): JsonResponse
+    public function getUsers(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
-            $users = $this->repository->findAll();
+            $decodedtoken = $JWTManager->decode($token);
+            $this->errorManager->TokenNotReset($decodedtoken);
+            
+            parse_str($request->getContent(), $data);
+
+            $usersPerPage = 5;
+            $numPage = $data["page"];
+
+            // Récupération page demandée
+            $page = $request->query->getInt('page', $numPage);
+
+            $offset = ($page - 1) * $usersPerPage;
+
+            $users = $this->repository->findBy([], null, $usersPerPage, $offset);
 
             $this->errorManager->checkNotFoundUser($users);
 
-            $serializedUsers = [];
+            $user_serialized = [];
             foreach ($users as $user) {
-                $serializedUsers[] = [
-                    'id' => $user->getId(),
-                    'name' => $user->getFirstname(),
-                    'encrypt' => $user->getPassword(),
-                    'mail' => $user->getEmail(),
-                    'tel' => $user->getTel(),
-                    'active' => $user->getActive(),
-                    'birthday' => $user->getDateBirth()
-                ];
+                array_push($user_serialized, $user->serializer());
             }
-            return new JsonResponse($serializedUsers);
+
+            $totalUsers = count($this->repository->findAll());
+
+            $totalPages = ceil($totalUsers / $usersPerPage);
+
+            // Vérif si page suivante existante
+            $nextPage = null;
+            if ($nextPage < $totalPages) {
+                $nextPage = $page + 1;
+
+                $nextPageOffset = ($nextPage - 1) * $usersPerPage;
+
+                // Récupération users page suivante
+                $nextPageUsers = $this->repository->findBy([], null, $usersPerPage, $nextPageOffset);
+
+                $nextPageUsersSerialized = [];
+                foreach ($nextPageUsers as $user) {
+                    array_push($nextPageUsersSerialized, $user->serializer());
+                }
+            }
+
+            if (!empty($user_serialized)) {
+                $currentSerializedContent = $user_serialized;
+                $currentPage = $page;
+            } else {
+                // Sinon, afficher les valeurs de $nextPageUsersSerialized
+                $currentSerializedContent = $nextPageUsersSerialized;
+                $currentPage = $nextPage;
+            }
+ 
+            $response = [
+                "error" => false,
+                "users" => $currentSerializedContent,
+                "pagination" => [
+                    "currentPage" => $currentPage,
+                    "totalPages" => $totalPages,
+                    "totalUsers" => $totalUsers
+                ]
+            ];
+
+            if ($page = $nextPage) {
+                $user_serialized = null;
+            }
+
+            return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
     }
 
