@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use App\Entity\User;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
@@ -88,6 +90,84 @@ class PlaylistController extends AbstractController
         }
     }
 
+    #[Route('/playlist/all', name: 'app_playlists_get', methods: ['GET'])]
+    public function get_all_playlists(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
+    {
+        try {
+            $decodedtoken = $JWTManager->decode($token);
+            $this->errorManager->TokenNotReset($decodedtoken);
+            
+            parse_str($request->getContent(), $data);
+
+            $playlistsPerPage = 5;
+            $numPage = $data["page"];
+
+            // Récupération page demandée
+            $page = $request->query->getInt('page', $numPage);
+
+            $offset = ($page - 1) * $playlistsPerPage;
+
+            $playlists = $this->repository->findBy([], null, $playlistsPerPage, $offset);
+
+            $this->errorManager->checkNotFoundPlaylist($playlists);
+
+            $playlist_serialized = [];
+            foreach ($playlists as $playlist) {
+                array_push($playlist_serialized, $playlist->serializer());
+            }
+
+            $totalPlaylists = count($this->repository->findAll());
+
+            $totalPages = ceil($totalPlaylists / $playlistsPerPage);
+
+            // Vérif si page suivante existante
+            $nextPage = null;
+            if ($nextPage < $totalPages) {
+                $nextPage = $page + 1;
+
+                $nextPageOffset = ($nextPage - 1) * $playlistsPerPage;
+
+                // Récupération playlists page suivante
+                $nextPagePlaylists = $this->repository->findBy([], null, $playlistsPerPage, $nextPageOffset);
+
+                $nextPagePlaylistsSerialized = [];
+                foreach ($nextPagePlaylists as $playlist) {
+                    array_push($nextPagePlaylistsSerialized, $playlist->serializer());
+                }
+            }
+
+            if (!empty($playlist_serialized)) {
+                $currentSerializedContent = $playlist_serialized;
+                $currentPage = $page;
+            } else {
+                // Sinon, afficher les valeurs de $nextPagePlaylistsSerialized
+                $currentSerializedContent = $nextPagePlaylistsSerialized;
+                $currentPage = $nextPage;
+            }
+ 
+            $response = [
+                "error" => false,
+                "playlists" => $currentSerializedContent,
+                "pagination" => [
+                    "currentPage" => $currentPage,
+                    "totalPages" => $totalPages,
+                    "totalPlaylists" => $totalPlaylists
+                ]
+            ];
+
+            if ($page = $nextPage) {
+                $playlist_serialized = null;
+            }
+
+            return $this->json($response, 200);
+
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        }
+    }
+
     #[Route('/playlist/{id}', name: 'app_playlist_put', methods: ['PUT'])]
     public function putPlaylist(Request $request, int $id): JsonResponse
     {
@@ -123,7 +203,7 @@ class PlaylistController extends AbstractController
     }
 
     #[Route('/playlist/{id}', name: 'app_playlist', methods: ['GET'])]
-    public function get_playlist_by_id(int $id): JsonResponse
+    public function get_playlist_by_id( $id): JsonResponse
     {
         try {
             $playlist = $this->repository->find($id);
@@ -137,34 +217,6 @@ class PlaylistController extends AbstractController
                 'create_at' => $playlist->getCreateAt(),
                 'update_at' => $playlist->getUpdateAt(),
             ], 200);
-    
-            // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
-        }
-    }
-
-    #[Route('/playlist/all', name: 'app_playlists_get', methods: ['GET'])]
-    public function get_all_playlists(): JsonResponse
-    {
-        try {
-            $playlists = $this->repository->findAll();
-
-            $this->errorManager->checkNotFoundPlaylist($playlists);
-
-            $serializedPlaylists = [];
-            foreach ($playlists as $playlist) {
-                $serializedPlaylists[] = [
-                    'id' => $playlist->getId(),
-                    'title' => $playlist->getTitle(),
-                    'public' => $playlist->isPublic(),
-                    'create_at' => $playlist->getCreateAt()->format('Y-m-d H:i:s'),
-                    'update_at' => $playlist->getUpdateAt()->format('Y-m-d H:i:s'),
-                ];
-            }
-
-            return new JsonResponse($serializedPlaylists);
     
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
