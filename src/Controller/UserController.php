@@ -84,7 +84,7 @@ class UserController extends AbstractController
             parse_str($request->getContent(), $data);
 
             //vérification attribut nécessaire
-            $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth', 'avatar']);
+            $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth']);
 
             $firstname = $data['firstname'];
             $lastname = $data['lastname'];
