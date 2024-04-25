@@ -14,8 +14,8 @@ class LabelHasArtist
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $joining_date = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $living_date = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $leaving_date = null;
 
     #[ORM\Id]
     #[ORM\ManyToOne(inversedBy: 'labelHasArtists')]
@@ -40,14 +40,14 @@ class LabelHasArtist
         return $this;
     }
 
-    public function getLivingDate(): ?\DateTimeInterface
+    public function getLeavingDate(): ?\DateTimeInterface
     {
-        return $this->living_date;
+        return $this->leaving_date;
     }
 
-    public function setLivingDate(\DateTimeInterface $living_date): static
+    public function setLeavingDate(\DateTimeInterface $leaving_date): static
     {
-        $this->living_date = $living_date;
+        $this->leaving_date = $leaving_date;
 
         return $this;
     }
