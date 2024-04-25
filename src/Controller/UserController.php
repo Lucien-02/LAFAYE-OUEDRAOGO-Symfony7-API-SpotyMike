@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\AlbumRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,21 +35,69 @@ class UserController extends AbstractController
     public function getUsers(): JsonResponse
     {
         try {
-            $users = $this->repository->findAll();
+            $decodedtoken = $JWTManager->decode($token);
+            $this->errorManager->TokenNotReset($decodedtoken);
+
+            parse_str($request->getContent(), $data);
+
+            $usersPerPage = 5;
+            $numPage = $data["page"];
+
+            // Récupération page demandée
+            $page = $request->query->getInt('page', $numPage);
+
+            $offset = ($page - 1) * $usersPerPage;
+
+            $users = $this->repository->findBy([], null, $usersPerPage, $offset);
 
             $this->errorManager->checkNotFoundUser($users);
 
             $serializedUsers = [];
             foreach ($users as $user) {
-                $serializedUsers[] = [
-                    'id' => $user->getId(),
-                    'name' => $user->getFirstname(),
-                    'encrypt' => $user->getPassword(),
-                    'mail' => $user->getEmail(),
-                    'tel' => $user->getTel(),
-                    'active' => $user->getActive(),
-                    'birthday' => $user->getDateBirth()
-                ];
+                array_push($user_serialized, $user->serializer());
+            }
+
+            $totalUsers = count($this->repository->findAll());
+
+            $totalPages = ceil($totalUsers / $usersPerPage);
+
+            // Vérif si page suivante existante
+            $nextPage = null;
+            if ($nextPage < $totalPages) {
+                $nextPage = $page + 1;
+
+                $nextPageOffset = ($nextPage - 1) * $usersPerPage;
+
+                // Récupération users page suivante
+                $nextPageUsers = $this->repository->findBy([], null, $usersPerPage, $nextPageOffset);
+
+                $nextPageUsersSerialized = [];
+                foreach ($nextPageUsers as $user) {
+                    array_push($nextPageUsersSerialized, $user->serializer());
+                }
+            }
+
+            if (!empty($user_serialized)) {
+                $currentSerializedContent = $user_serialized;
+                $currentPage = $page;
+            } else {
+                // Sinon, afficher les valeurs de $nextPageUsersSerialized
+                $currentSerializedContent = $nextPageUsersSerialized;
+                $currentPage = $nextPage;
+            }
+
+            $response = [
+                "error" => false,
+                "users" => $currentSerializedContent,
+                "pagination" => [
+                    "currentPage" => $currentPage,
+                    "totalPages" => $totalPages,
+                    "totalUsers" => $totalUsers
+                ]
+            ];
+
+            if ($page = $nextPage) {
+                $user_serialized = null;
             }
             return new JsonResponse($serializedUsers);
 
@@ -77,7 +126,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/register', name: 'app_register', methods: 'POST')]
-    public function register(Request $request, UserPasswordHasherInterface $passwordHash): JsonResponse
+    public function register(Request $request, UserPasswordHasherInterface $passwordHash, AlbumRepository $albumRepository): JsonResponse
     {
         try {
             parse_str($request->getContent(), $data);
@@ -85,80 +134,89 @@ class UserController extends AbstractController
 
             $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth']);
 
-            $firstname = $data['firstname'];
-            $lastname = $data['lastname'];
-            $email = $data['email'];
-            $password = $data['password'];
-            $birthday =  $data['dateBirth'];
-            $uniqueId = uniqid();
+        $firstname = $data['firstname'];
+        $lastname = $data['lastname'];
+        $email = $data['email'];
+        $password = $data['password'];
+        $birthday =  $data['dateBirth'];
+        $uniqueId = uniqid();
 
-            if (isset($data['sexe'])) {
-                $sexe = $data['sexe'];
-            }
-            if (isset($data['tel'])) {
-                $phoneNumber = $data['tel'];
-            }
-            $ageMin = 12;
-            // vérif format mail
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return $this->errorManager->generateError(ErrorTypes::INVALID_EMAIL);
-            }
-
-            // vérif format mdp
-            $this->errorManager->isValidPassword($password);
-            // vérif format date
-            $this->errorManager->isValidDateFormat($birthday, 'd/m/Y');
-            // vérif age
-            $this->errorManager->isAgeValid($birthday, $ageMin);
-
-            //vérif tel
-            if (isset($data['tel'])) {
-                $this->errorManager->isValidPhoneNumber($phoneNumber);
-            }
-
-            //vérif sexe
-            if (isset($data['sexe'])) {
-                $this->errorManager->isValidGender($sexe);
-            }
-
-            //vérif email unique
-            if ($this->repository->findOneByEmail($email)) {
-                return $this->errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
-            }
-
-            $user = new User();
-
-            $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-            $user->setCreateAt($date);
-            $user->setUpdateAt($date);
-
-            $user->setFirstname($firstname);
-            $user->setLastname($lastname);
-            $dateOfBirth = new \DateTimeImmutable($birthday);
-            $user->setDateBirth($dateOfBirth);
-            $user->setSexe($sexe);
-            $user->setEmail($email);
-            $hash = $passwordHash->hashPassword($user, $password);
-            $user->setPassword($hash);
-            $user->setIdUser($uniqueId);
-
-            $this->entityManager->persist($user);
-
-            $this->entityManager->flush();
-
-            $user->serializer();
-
-            return new JsonResponse([
-                'error' => false,
-                'message' => "L'utilisateur a bien été créé avec succès.",
-                'user' => $user->serializer()
-            ]);
-
-            // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
-            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+        if (isset($data['sexe'])) {
+            $sexe = $data['sexe'];
         }
+        if (isset($data['tel'])) {
+            $phoneNumber = $data['tel'];
+        }
+        $ageMin = 12;
+        // vérif format mail
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->errorManager->generateError(ErrorTypes::INVALID_EMAIL);
+        }
+
+        // vérif format mdp
+        $this->errorManager->isValidPassword($password);
+        // vérif format date
+        $this->errorManager->isValidDateFormat($birthday, 'd/m/Y');
+
+        $dateOfBirth = \DateTime::createFromFormat('d/m/Y', $birthday)->format('Y-m-d');
+
+        // vérif age
+        $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
+
+        //vérif tel
+        if (isset($data['tel'])) {
+            $this->errorManager->isValidPhoneNumber($phoneNumber);
+        }
+
+        //vérif sexe
+        if (isset($data['sexe'])) {
+            $this->errorManager->isValidGender($sexe);
+        }
+
+        //vérif email unique
+        if ($this->repository->findOneByEmail($email)) {
+            return $this->errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
+        }
+
+        $user = new User();
+
+        $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+        $user->setCreateAt($date);
+        $user->setUpdateAt($date);
+
+        $user->setFirstname($firstname);
+        $user->setLastname($lastname);
+        $user->setDateBirth(new DateTime($dateOfBirth));
+        $user->setSexe($sexe);
+        $user->setEmail($email);
+        $hash = $passwordHash->hashPassword($user, $password);
+        $user->setPassword($hash);
+        $user->setIdUser($uniqueId);
+
+        $this->entityManager->persist($user);
+
+        $this->entityManager->flush();
+
+        $explodeData = explode(",", $data['avatar']);
+
+        if (count($explodeData) == 2) {
+            $file = base64_decode($explodeData[1]);
+            $chemin = $this->getParameter('upload_directory') . '/' . $user->getEmail();
+            mkdir($chemin);
+            file_put_contents($chemin . '/file.png', $file);
+        }
+
+        return new JsonResponse([
+            'error' => false,
+            'message' => "L'utilisateur a bien été créé avec succès.",
+            'user' => $user->serializer($albumRepository)
+        ], 201);
+
+        // Gestion des erreurs inattendues
+        throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        // } catch (Exception $exception) {
+        //     return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+        // }
     }
 
 
@@ -170,7 +228,7 @@ class UserController extends AbstractController
             $email = $decodedtoken['username'];
             $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             parse_str($request->getContent(), $data);
-            
+
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return new JsonResponse([
                     'error' => 'Adresse email invalide',
@@ -186,7 +244,7 @@ class UserController extends AbstractController
                     ], JsonResponse::HTTP_CONFLICT);
                 }
             }
-            
+
             if (isset($data['id_user'])) {
                 $request_user->setIdUser($data['id_user']);
             }
@@ -221,8 +279,8 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Votre inscription a bien été prise en compte."
-            ]);
-            
+            ], 201);
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
