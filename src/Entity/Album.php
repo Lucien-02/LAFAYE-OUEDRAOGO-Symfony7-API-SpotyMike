@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bundle\MakerBundle\Str;
 
 #[ORM\Entity(repositoryClass: AlbumRepository::class)]
 class Album
@@ -168,7 +169,7 @@ class Album
         return $this;
     }
 
-    public function serializer($owner = false)
+    public function serializer($owner = false, string $label)
     {
         $songsData = [];
         $songs = $this->getSongIdSong();
@@ -183,7 +184,7 @@ class Album
             "id" => $this->getId(),
             "nom" => $this->getNom(),
             "categ" => $this->getCateg(),
-            // "label" => $this->getCateg(),
+            "label" => $label,
             "cover" => "yo",
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),

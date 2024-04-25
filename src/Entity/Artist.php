@@ -146,7 +146,7 @@ class Artist
         $albumsData = [];
         $albums = $this->getAlbumIdAlbum();
         foreach ($albums as $album) {
-            $albumsData[] = $album->serializer($owner);
+            $albumsData[] = $album->serializer($owner, '');
         }
 
         return [
