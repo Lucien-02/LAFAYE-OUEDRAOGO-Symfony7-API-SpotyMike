@@ -48,7 +48,7 @@ class AlbumController extends AbstractController
                 'error' => false,
                 'message' => "Votre album a été supprimé avec succès."
             ], 200);
-            
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -62,14 +62,14 @@ class AlbumController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             parse_str($request->getContent(), $data);
 
             $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year']);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $uniqueId = uniqid();
-            
+
             $album = new Album();
             $artist = $this->entityManager->getRepository(Artist::class)->find(1);
             $album->setArtistUserIdUser($artist);
@@ -89,7 +89,7 @@ class AlbumController extends AbstractController
                 'message' => "Album créé avec succès.",
                 'id' => $album->getId()
             ], 201);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -103,7 +103,7 @@ class AlbumController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             $album = $this->repository->find($id);
 
             $this->errorManager->checkNotFoundAlbumId($album);
@@ -134,7 +134,7 @@ class AlbumController extends AbstractController
                 'message' => "Album mis à jour avec succès.",
                 'idSong' => $album->getSongIdSong()
             ], 200);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -148,7 +148,7 @@ class AlbumController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             $album = $this->repository->find($id);
 
             $this->errorManager->checkNotFoundAlbumId($album);
@@ -178,7 +178,7 @@ class AlbumController extends AbstractController
                 'error' => false,
                 'message' => "Album mis à jour avec succès."
             ], 200);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -192,20 +192,26 @@ class AlbumController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             if (empty($id)) {
                 return $this->errorManager->generateError(ErrorTypes::MISSING_ALBUM_ID);
             }
 
             $album = $this->repository->find($id);
-
+            //dd($this->repository->findLabelsByAlbum($id));
+            $labels = $this->repository->findLabelsByAlbum($id);
             $this->errorManager->checkNotFoundAlbumId($album);
+
+            foreach ($labels as $label) {
+                $labelId = $label->getLabelId();
+                $labelnom = $labelId->getNom();
+            }
 
             return new JsonResponse([
                 "error" => false,
-                "album" => $album->serializer()
+                "album" => $album->serializer(false, $labelnom)
             ], 200);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -213,13 +219,14 @@ class AlbumController extends AbstractController
         }
     }
 
+
     #[Route('/album/{id}', name: 'app_album_get_by_id', methods: ['GET'])]
     public function get_album_by_id(int $id, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             if (empty($id)) {
                 return $this->errorManager->generateError(ErrorTypes::MISSING_ALBUM_ID);
             }
@@ -232,7 +239,7 @@ class AlbumController extends AbstractController
                 "error" => false,
                 "album" => $album->serializer()
             ], 200);
-    
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -293,8 +300,19 @@ class AlbumController extends AbstractController
                 // Sinon, afficher les valeurs de $nextPageAlbumsSerialized
                 $currentSerializedContent = $nextPageAlbumsSerialized;
                 $currentPage = $nextPage;
+                $id = $album->getId();
+                $labelnom = null;
+                $labels = $this->repository->findLabelsByAlbum($id);
+
+                if (!empty($labels)) {
+                    foreach ($labels as $label) {
+                        $labelId = $label->getLabelId();
+                        $labelnom = $labelId->getNom();
+                    }
+                }
+                $serializedAlbums[] = $album->serializer(false, $labelnom);
             }
- 
+
             $response = [
                 "error" => false,
                 "albums" => $currentSerializedContent,

@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Entity\User;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
+use App\Repository\AlbumRepository;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -164,7 +165,7 @@ class ArtistController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             parse_str($request->getContent(), $data);
 
             $artistsPerPage = 5;
@@ -212,7 +213,7 @@ class ArtistController extends AbstractController
                 $currentSerializedContent = $nextPageArtistsSerialized;
                 $currentPage = $nextPage;
             }
- 
+
             $response = [
                 "error" => false,
                 "artists" => $currentSerializedContent,
