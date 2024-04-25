@@ -38,7 +38,7 @@ class UserController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             parse_str($request->getContent(), $data);
 
             $usersPerPage = 5;
@@ -86,7 +86,7 @@ class UserController extends AbstractController
                 $currentSerializedContent = $nextPageUsersSerialized;
                 $currentPage = $nextPage;
             }
- 
+
             $response = [
                 "error" => false,
                 "users" => $currentSerializedContent,
@@ -136,52 +136,52 @@ class UserController extends AbstractController
             //vérification attribut nécessaire
             $this->errorManager->checkRequiredAttributes($data, ['firstname', 'lastname', 'email', 'password', 'dateBirth']);
 
-        $firstname = $data['firstname'];
-        $lastname = $data['lastname'];
-        $email = $data['email'];
-        $password = $data['password'];
-        $birthday =  $data['dateBirth'];
-        $uniqueId = uniqid();
+            $firstname = $data['firstname'];
+            $lastname = $data['lastname'];
+            $email = $data['email'];
+            $password = $data['password'];
+            $birthday =  $data['dateBirth'];
+            $uniqueId = uniqid();
 
-        if (isset($data['sexe'])) {
-            $sexe = $data['sexe'];
-        }
-        if (isset($data['tel'])) {
-            $phoneNumber = $data['tel'];
-        }
-        $ageMin = 12;
-        // vérif format mail
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return $this->errorManager->generateError(ErrorTypes::INVALID_EMAIL);
-        }
+            if (isset($data['sexe'])) {
+                $sexe = $data['sexe'];
+            }
+            if (isset($data['tel'])) {
+                $phoneNumber = $data['tel'];
+            }
+            $ageMin = 12;
+            // vérif format mail
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $this->errorManager->generateError(ErrorTypes::INVALID_EMAIL);
+            }
 
             // vérif format mdp
             $this->errorManager->isValidPassword($password);
             // vérif format date
             $this->errorManager->isValidDateFormat($birthday, 'd/m/Y');
-            
+
             $dateOfBirth = \DateTime::createFromFormat('d/m/Y', $birthday)->format('Y-m-d');
-            
+
             // vérif age
             $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
 
-        //vérif tel
-        if (isset($data['tel'])) {
-            $this->errorManager->isValidPhoneNumber($phoneNumber);
-        }
+            //vérif tel
+            if (isset($data['tel'])) {
+                $this->errorManager->isValidPhoneNumber($phoneNumber);
+            }
 
-        //vérif sexe
-        if (isset($data['sexe'])) {
-            $this->errorManager->isValidGender($sexe);
-        }
+            //vérif sexe
+            if (isset($data['sexe'])) {
+                $this->errorManager->isValidGender($sexe);
+            }
 
-        //vérif email unique
-        if ($this->repository->findOneByEmail($email)) {
-            return $this->errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
-        }
+            //vérif email unique
+            if ($this->repository->findOneByEmail($email)) {
+                return $this->errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
+            }
 
             $user = new User();
-            
+
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $user->setCreateAt($date);
             $user->setUpdateAt($date);
@@ -195,29 +195,29 @@ class UserController extends AbstractController
             $user->setPassword($hash);
             $user->setIdUser($uniqueId);
 
-        $this->entityManager->persist($user);
+            $this->entityManager->persist($user);
 
-        $this->entityManager->flush();
+            $this->entityManager->flush();
 
             $explodeData = explode(",", $data['avatar']);
-            if(count($explodeData) == 2){
+            if (count($explodeData) == 2) {
                 $file = base64_decode($explodeData[1]);
                 $chemin = $this->getParameter('upload_directory') . '/' . $user->getEmail();
                 mkdir($chemin);
                 file_put_contents($chemin . '/file.png', $file);
             }
 
-        return new JsonResponse([
-            'error' => false,
-            'message' => "L'utilisateur a bien été créé avec succès.",
-            'user' => $user->serializer($albumRepository)
-        ], 201);
+            return new JsonResponse([
+                'error' => false,
+                'message' => "L'utilisateur a bien été créé avec succès.",
+                'user' => $user->serializer($albumRepository)
+            ], 201);
 
-        // Gestion des erreurs inattendues
-        throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        // } catch (Exception $exception) {
-        //     return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
-        // }
+            // Gestion des erreurs inattendues
+            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (Exception $exception) {
+            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+        }
     }
 
 
@@ -281,7 +281,7 @@ class UserController extends AbstractController
                 'error' => false,
                 'message' => "Votre inscription a bien été prise en compte."
             ], 201);
-            
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
