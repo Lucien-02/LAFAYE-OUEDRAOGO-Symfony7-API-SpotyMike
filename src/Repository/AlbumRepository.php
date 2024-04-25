@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Album;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\LabelHasArtist;
 
 /**
  * @extends ServiceEntityRepository<Album>
@@ -21,28 +22,27 @@ class AlbumRepository extends ServiceEntityRepository
         parent::__construct($registry, Album::class);
     }
 
-    //    /**
-    //     * @return Album[] Returns an array of Album objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findLabelsByAlbum($albumId)
+    {
 
-    //    public function findOneBySomeField($value): ?Album
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $qb = $this->createQueryBuilder('a');
+
+        $qb->select('lha')
+            ->from(LabelHasArtist::class, 'lha')
+            ->join('a.artist_User_idUser', 'album_artist')
+            ->where('a.id = :albumId')
+            ->andWhere('lha.artist_id = album_artist.id')
+            ->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->between('a.createAt', 'lha.joining_date', 'lha.leaving_date'),
+                    $qb->expr()->andX(
+                        $qb->expr()->gt('a.createAt', 'lha.joining_date'),
+                        $qb->expr()->isNull('lha.leaving_date')
+                    )
+                )
+            )
+            ->setParameter('albumId', $albumId);
+
+        return $qb->getQuery()->getResult();
+    }
 }

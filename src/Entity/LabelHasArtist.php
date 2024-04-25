@@ -9,27 +9,24 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: LabelHasArtistRepository::class)]
 class LabelHasArtist
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $joining_date = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $living_date = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $leaving_date = null;
 
+    #[ORM\Id]
     #[ORM\ManyToOne(inversedBy: 'labelHasArtists')]
+    #[ORM\JoinColumn(name: 'label_id', referencedColumnName: 'id')]
     private ?Label $label_id = null;
 
+    #[ORM\Id]
     #[ORM\ManyToOne(inversedBy: 'ArtisthasLabels')]
+    #[ORM\JoinColumn(name: 'artist_id', referencedColumnName: 'id')]
     private ?Artist $artist_id = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getJoiningDate(): ?\DateTimeInterface
     {
@@ -43,14 +40,14 @@ class LabelHasArtist
         return $this;
     }
 
-    public function getLivingDate(): ?\DateTimeInterface
+    public function getLeavingDate(): ?\DateTimeInterface
     {
-        return $this->living_date;
+        return $this->leaving_date;
     }
 
-    public function setLivingDate(\DateTimeInterface $living_date): static
+    public function setLeavingDate(\DateTimeInterface $leaving_date): static
     {
-        $this->living_date = $living_date;
+        $this->leaving_date = $leaving_date;
 
         return $this;
     }
