@@ -129,23 +129,30 @@ class AlbumController extends AbstractController
     #[Route('/album/{id}', name: 'app_album', methods: ['GET'])]
     public function get_album_by_id(int $id): JsonResponse
     {
-        try {
-            $album = $this->repository->find($id);
+        //try {
+        $album = $this->repository->find($id);
+        //dd($this->repository->findLabelsByAlbum($id));
+        $labels = $this->repository->findLabelsByAlbum($id);
+        $this->errorManager->checkNotFoundAlbumId($album);
 
-            $this->errorManager->checkNotFoundAlbumId($album);
-
-            return new JsonResponse([
-                $album->serializer()
-            ]);
-
-            // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
-            return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        foreach ($labels as $label) {
+            $labelId = $label->getLabelId();
+            $labelnom = $labelId->getNom();
         }
-    }
 
-    #[Route('/album/all', name: 'app_albums_get', methods: ['GET'])]
+        return new JsonResponse([
+
+            $album->serializer(false, $labelnom)
+        ]);
+
+        // Gestion des erreurs inattendues
+        throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+    } //catch (Exception $exception) {
+    //   return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+    //}
+    // }
+
+    #[Route('/albums', name: 'app_albums_get', methods: ['GET'])]
     public function get_all_albums(): JsonResponse
     {
         try {
@@ -155,13 +162,17 @@ class AlbumController extends AbstractController
 
             $serializedAlbums = [];
             foreach ($albums as $album) {
-                $serializedAlbums[] = [
-                    'nom' => $album->getNom(),
-                    'categ' => $album->getCateg(),
-                    'cover' => $album->getCover(),
-                    'year' => $album->getYear(),
-                    'album_id' => $album->getIdAlbum(),
-                ];
+                $id = $album->getId();
+                $labelnom = null;
+                $labels = $this->repository->findLabelsByAlbum($id);
+
+                if (!empty($labels)) {
+                    foreach ($labels as $label) {
+                        $labelId = $label->getLabelId();
+                        $labelnom = $labelId->getNom();
+                    }
+                }
+                $serializedAlbums[] = $album->serializer(false, $labelnom);
             }
 
             return new JsonResponse($serializedAlbums);

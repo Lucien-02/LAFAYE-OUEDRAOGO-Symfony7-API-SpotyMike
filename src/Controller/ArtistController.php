@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Entity\User;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
+use App\Repository\AlbumRepository;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -167,7 +168,7 @@ class ArtistController extends AbstractController
 
 
     #[Route('/artist', name: 'app_artists_get', methods: ['GET'])]
-    public function get_all_artists(TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function get_all_artists(TokenInterface $token, JWTTokenManagerInterface $JWTManager, AlbumRepository $albumRepository): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
