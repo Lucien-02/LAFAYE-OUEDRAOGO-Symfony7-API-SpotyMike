@@ -93,7 +93,7 @@ class LoginController extends  AbstractController
             //Gerer le nombre de tentative de connection max
             //recup l'ip
             $ip = $request->getClientIp();
-            $errorManager->tooManyAttempts(20, 300, $ip, 'password-lost');
+            $errorManager->tooManyAttempts(3, 300, $ip, 'password-lost');
 
             parse_str($request->getContent(), $data);
             //Email manquant

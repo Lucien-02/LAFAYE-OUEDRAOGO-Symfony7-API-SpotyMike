@@ -199,12 +199,14 @@ class UserController extends AbstractController
 
             $this->entityManager->flush();
 
-            $explodeData = explode(",", $data['avatar']);
-            if (count($explodeData) == 2) {
-                $file = base64_decode($explodeData[1]);
-                $chemin = $this->getParameter('upload_directory') . '/' . $user->getEmail();
-                mkdir($chemin);
-                file_put_contents($chemin . '/file.png', $file);
+            if (isset($data['avatar'])) {
+                $explodeData = explode(",", $data['avatar']);
+                if (count($explodeData) == 2) {
+                    $file = base64_decode($explodeData[1]);
+                    $chemin = $this->getParameter('upload_directory') . '/' . $user->getEmail();
+                    mkdir($chemin);
+                    file_put_contents($chemin . '/file.png', $file);
+                }
             }
 
             return new JsonResponse([
@@ -280,7 +282,7 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Votre inscription a bien été prise en compte."
-            ], 201);
+            ]);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
@@ -312,7 +314,7 @@ class UserController extends AbstractController
         }
     }
 
-    #[Route('/account-desactivation', name: 'app_user_delete', methods: 'DELETE')]
+    #[Route('/account-deactivation', name: 'app_user_delete', methods: 'DELETE')]
     public function account_desactivation(TokenInterface $token, JWTTokenManagerInterface $JWTManager, ErrorManager $errorManager): JsonResponse
     {
         try {
