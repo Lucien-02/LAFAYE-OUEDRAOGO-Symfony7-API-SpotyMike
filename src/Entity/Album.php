@@ -169,10 +169,19 @@ class Album
         return $this;
     }
 
-    public function serializer($owner = false, string $label)
+    public function serializer($owner = false, AlbumRepository $albumRepository)
     {
         $songsData = [];
         $songs = $this->getSongIdSong();
+        $labels = $albumRepository->findLabelsByAlbum($this);
+
+        if (is_array($labels)) {
+            foreach ($labels as $label) {
+                $labelId = $label->getLabelId();
+                $labelnom = $labelId->getNom();
+            }
+        }
+        //dd($labelnom);
 
         foreach ($songs as $song) {
             if ($owner == true || $song->isVisibility() == true) {
@@ -184,7 +193,7 @@ class Album
             "id" => $this->getId(),
             "nom" => $this->getNom(),
             "categ" => $this->getCateg(),
-            "label" => $label,
+            "label" => isset($labelnom) ? $labelnom : null,
             "cover" => "yo",
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),

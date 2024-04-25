@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\AlbumRepository;
 
 #[ORM\Entity(repositoryClass: ArtistRepository::class)]
 class Artist
@@ -141,12 +142,12 @@ class Artist
         return $this;
     }
 
-    public function serializer($owner = false)
+    public function serializer($owner = false, AlbumRepository $albumRepository)
     {
         $albumsData = [];
         $albums = $this->getAlbumIdAlbum();
         foreach ($albums as $album) {
-            $albumsData[] = $album->serializer($owner, '');
+            $albumsData[] = $album->serializer($owner, $albumRepository);
         }
 
         return [
