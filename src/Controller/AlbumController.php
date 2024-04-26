@@ -55,6 +55,7 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -96,6 +97,7 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -141,6 +143,7 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -185,6 +188,7 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -221,6 +225,7 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -249,6 +254,7 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -330,6 +336,7 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 }
