@@ -41,16 +41,18 @@ class LoginController extends  AbstractController
     public function login(Request $request, JWTTokenManagerInterface $JWTManager, UserPasswordHasherInterface $passwordHash, ErrorManager $errorManager, AlbumRepository $albumRepository): JsonResponse
     {
         try {
-            //Gerer le nome de tentative de connection max
-            //recup l'ip
-            $ip = $request->getClientIp();
-            $errorManager->tooManyAttempts(5, 300, $ip, 'connection');
 
             parse_str($request->getContent(), $data);
             //vérification attribut nécessaire
-            $errorManager->checkRequiredLoginAttributes($data, ['Email', 'Password']);
-            $email = $data['Email'];
-            $password = $data['Password'];
+            $errorManager->checkRequiredLoginAttributes($data, ['email', 'password']);
+            $email = $data['email'];
+            $password = $data['password'];
+
+            //Gerer le nome de tentative de connection max
+            //recup l'ip
+
+            $errorManager->tooManyAttempts(5, 300, $email, 'connection');
+
 
             // vérif format mail
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -90,17 +92,17 @@ class LoginController extends  AbstractController
     public function password_lost(Request $request, ErrorManager $errorManager, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
-            //Gerer le nombre de tentative de connection max
-            //recup l'ip
-            $ip = $request->getClientIp();
-            $errorManager->tooManyAttempts(3, 300, $ip, 'password-lost');
-
             parse_str($request->getContent(), $data);
             //Email manquant
             if (!isset($data["email"])) {
                 return $errorManager->generateError(ErrorTypes::MISSING_EMAIL);
             }
             $email = $data["email"];
+            //Gerer le nombre de tentative de connection max
+            //recup l'email
+            $errorManager->tooManyAttempts(3, 300, $email, 'password-lost');
+
+
             $email_found = $this->repository->findOneByEmail($email);
             // vérif format mail
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
