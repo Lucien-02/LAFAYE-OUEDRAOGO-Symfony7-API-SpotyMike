@@ -41,7 +41,9 @@ class LabelController extends AbstractController
 
             $labelsPerPage = 5;
             $numPage = $_GET["currentPage"];
-
+            if ($numPage <= 0) {
+                throw new CustomException(ErrorTypes::NOT_FOUND_ARTIST);
+            }
             // Récupération page demandée
             $page = $request->query->getInt('currentPage', $numPage);
 
