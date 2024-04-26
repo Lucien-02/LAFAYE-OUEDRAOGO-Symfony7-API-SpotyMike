@@ -147,8 +147,15 @@ class ErrorManager
 
     public  function isValidPhoneNumber(string $phoneNumber)
     {
-        if (!preg_match('/^0[1-9]([-. ]?[0-9]{2}){4}$/', $phoneNumber)) {
+        if (!preg_match("/^[0-9]{10}$/", $phoneNumber)) {
             throw new Exception(ErrorTypes::INVALID_PHONE_NUMBER);
+        }
+    }
+
+    public  function isValidEmail(string $email)
+    {
+        if (!preg_match("/^[0-9]{10}$/", $email)) {
+            throw new Exception(ErrorTypes::INVALID_EMAIL);
         }
     }
 
@@ -214,7 +221,7 @@ class ErrorManager
                 $codeErreur = 429;
                 break;
             case 'MissingAttributes':
-                $errorMessage = 'Une ou plusieurs données obligatoires sont manquantes.';
+                $errorMessage = 'Des champs obligatoires sont manquants.';
                 $codeErreur = 400;
                 break;
             case 'MissingEmail':
@@ -243,7 +250,7 @@ class ErrorManager
                 break;
             case 'InvalidAge':
                 $errorMessage = "L'utilisateur doit avoir au moins $variable ans.";
-                $codeErreur = 403;
+                $codeErreur = 400;
                 break;
             case 'InvalidPasswordFormat':
                 $errorMessage = "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre, un caractère spécial et avoir 8 caractères minimum.";
@@ -269,7 +276,7 @@ class ErrorManager
                 $codeErreur = 400;
                 break;
             case 'InvalidGender':
-                $errorMessage = 'La valeur du champ sexe est invalide. Les valeurs autorisées sont 0 pour Femme et 1 pour Homme.';
+                $errorMessage = 'La valeur du champ sexe est invalide. Les valeurs autorisées sont 0 pour Femme, 1 pour Homme.';
                 $codeErreur = 400;
                 break;
             case 'NotUniqueEmail':
