@@ -162,10 +162,6 @@ class UserController extends AbstractController
 
             $dateOfBirth = \DateTime::createFromFormat('d/m/Y', $birthday)->format('Y-m-d');
 
-
-            // vérif age
-            $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
-
             $user = new User();
 
             //vérif tel
