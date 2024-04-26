@@ -35,9 +35,10 @@ class ErrorTypes
     public const INVALID_PHONE_NUMBER = 'InvalidPhoneNumber';
     public const INVALID_GENDER = 'InvalidGender';
     public const NOT_UNIQUE_EMAIL = 'NotUniqueEmail';
+    public const NOT_UNIQUE_TEL = 'NotUniqueTel';
     public const NOT_UNIQUE_ARTIST_NAME = 'NotUniqueArtistName';
     public const TOKEN_INVALID_MISSING = 'TokenInvalidMissing';
     public const TOKEN_PASSWORD_EXPIRE = 'TokenPasswordExpire';
     public const ACCOUNT_ALREADY_DESACTIVATE = 'AccountAlreadyDesactivate';
-    public const VALIDDATALENGTH = 'ValidDataLength';
+    public const INVALID_DATA_LENGTH = 'InvalidDataLength';
 }

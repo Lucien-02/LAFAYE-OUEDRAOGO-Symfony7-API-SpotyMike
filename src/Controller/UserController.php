@@ -281,10 +281,7 @@ class UserController extends AbstractController
                 if ($alredytel == null) {
                     $request_user->setTel($data['tel']);
                 } else {
-                    return new JsonResponse([
-                        'error' => true,
-                        'message' => 'Conflit de données. Le numéro de téléphone est déjà utilisé par un autre utilisateur.'
-                    ], 409);
+                    throw new Exception(ErrorTypes::NOT_UNIQUE_TEL);
                 }
             }
             if (isset($data['encrypte'])) {

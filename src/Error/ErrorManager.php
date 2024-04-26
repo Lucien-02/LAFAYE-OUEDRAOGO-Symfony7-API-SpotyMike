@@ -210,9 +210,10 @@ class ErrorManager
     public function IsLengthValid(string $field, int $maxlength)
     {
         if (strlen($field) > $maxlength) {
-            throw new Exception(ErrorTypes::VALIDDATALENGTH);
+            throw new Exception(ErrorTypes::INVALID_DATA_LENGTH);
         }
     }
+
 
     public function generateError(string $errorType, string $variable = null): JsonResponse
     {
@@ -291,6 +292,10 @@ class ErrorManager
                 $errorMessage = 'Cet email est déjà utilisé par un autre compte.';
                 $codeErreur = 409;
                 break;
+            case 'NotUniqueTel':
+                $errorMessage = 'Conflit de données. Le numéro de téléphone est déjà utilisé par un autre utilisateur.';
+                $codeErreur = 409;
+                break;
             case 'NotFoundArtist':
                 $errorMessage = "Aucun artiste trouvé pour la page demandée.";
                 $codeErreur = 404;
@@ -359,10 +364,11 @@ class ErrorManager
                 $errorMessage = "Le compte est déja désactivé.";
                 $codeErreur = 409;
                 break;
-            case 'ValidDataLength':
+            case 'InvalidDataLength':
                 $errorMessage = 'Erreur de validation des données.';
                 $codeErreur = 422;
                 break;
+
             default:
                 $errorMessage = 'Erreur inconnue.';
                 $codeErreur = 400;
