@@ -16,6 +16,7 @@ use Exception;
 use UrlGeneratorInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use CustomException;
 
 class AlbumController extends AbstractController
 {
@@ -51,9 +52,10 @@ class AlbumController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -92,9 +94,10 @@ class AlbumController extends AbstractController
             ], 201);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -137,9 +140,10 @@ class AlbumController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -181,9 +185,10 @@ class AlbumController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -196,7 +201,7 @@ class AlbumController extends AbstractController
 
             parse_str($request->getContent(), $data);
 
-            if ((isset($data['label']) || isset($data['year']) || isset($data['featuring']) || isset($data['category']) || isset($data['limit']))){
+            if ((isset($data['label']) || isset($data['year']) || isset($data['featuring']) || isset($data['category']) || isset($data['limit']))) {
                 $albums = $this->repository->findBy($data);
                 $this->errorManager->checkNotFoundAlbum($albums);
 
@@ -209,8 +214,7 @@ class AlbumController extends AbstractController
                     "error" => false,
                     "album" => $album->serializer()
                 ], 200);
-            }
-            else {
+            } else {
                 return $this->json([
                     'error' => true,
                     'message' => "Les paramètres fournis sont invalides. Veuillez vérifier les données soumises."
@@ -218,9 +222,10 @@ class AlbumController extends AbstractController
             }
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -246,9 +251,10 @@ class AlbumController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -263,7 +269,9 @@ class AlbumController extends AbstractController
 
             $albumsPerPage = 5;
             $numPage = $_GET["currentPage"];
-
+            if ($numPage <= 0) {
+                throw new CustomException(ErrorTypes::NOT_FOUND_ARTIST);
+            }
             // Récupération page demandée
             $page = $request->query->getInt('currentPage', $numPage);
 
@@ -327,9 +335,10 @@ class AlbumController extends AbstractController
             return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 }

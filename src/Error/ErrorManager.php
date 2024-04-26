@@ -7,6 +7,7 @@ use Exception;
 use Psr\Cache\CacheItemPoolInterface;
 use DateTime;
 use Throwable;
+use CustomException;
 
 
 class ErrorManager
@@ -22,7 +23,7 @@ class ErrorManager
     {
         if (isset($decodedtoken['type'])) {
             if ($decodedtoken['type'] == 'reset-password') {
-                throw new Exception(ErrorTypes::TOKEN_INVALID_MISSING);
+                throw new CustomException(ErrorTypes::TOKEN_INVALID_MISSING);
             }
         }
     }
@@ -31,7 +32,7 @@ class ErrorManager
     {
         $date = \DateTime::createFromFormat($expectedFormat, $dateString);
         if ($date === false || $date->format($expectedFormat) !== $dateString) {
-            throw new Exception(ErrorTypes::INVALID_DATE_FORMAT);
+            throw new CustomException(ErrorTypes::INVALID_DATE_FORMAT);
         }
     }
 
@@ -42,88 +43,88 @@ class ErrorManager
             preg_match('/[a-z]/', $password) &&
             preg_match('/[0-9]/', $password) &&
             preg_match('/[!@#$%^&*()-_+=]/', $password))) {
-            throw new Exception(ErrorTypes::INVALID_PASSWORD_FORMAT);
+            throw new CustomException(ErrorTypes::INVALID_PASSWORD_FORMAT);
         }
     }
     public function checkNotFoundUser(array $entity)
     {
 
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_USER);
+            throw new CustomException(ErrorTypes::NOT_FOUND_USER);
         }
     }
     public function checkNotFoundAlbum(array $entity)
     {
 
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_ALBUM);
+            throw new CustomException(ErrorTypes::NOT_FOUND_ALBUM);
         }
     }
     public function checkNotFoundSong(array $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_SONG);
+            throw new CustomException(ErrorTypes::NOT_FOUND_SONG);
         }
     }
     public function checkNotFoundPlaylist(array $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_PLAYLIST);
+            throw new CustomException(ErrorTypes::NOT_FOUND_PLAYLIST);
         }
     }
     public function checkNotFoundLabel(array $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_LABEL);
+            throw new CustomException(ErrorTypes::NOT_FOUND_LABEL);
         }
     }
     public function checkNotFoundArtist(array $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_ARTIST);
+            throw new CustomException(ErrorTypes::NOT_FOUND_ARTIST);
         }
     }
     public function checkNotFoundArtistId(object $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_ARTIST_ID);
+            throw new CustomException(ErrorTypes::NOT_FOUND_ARTIST_ID);
         }
     }
     public function checkNotFoundUserId(object $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_USER_ID);
+            throw new CustomException(ErrorTypes::NOT_FOUND_USER_ID);
         }
     }
     public function checkNotFoundLabelId(object $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_LABEL_ID);
+            throw new CustomException(ErrorTypes::NOT_FOUND_LABEL_ID);
         }
     }
     public function checkNotFoundPlaylistId(object $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_PLAYLIST_ID);
+            throw new CustomException(ErrorTypes::NOT_FOUND_PLAYLIST_ID);
         }
     }
     public function checkNotFoundSongId(object $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_SONG_ID);
+            throw new CustomException(ErrorTypes::NOT_FOUND_SONG_ID);
         }
     }
     public function checkNotFoundAlbumId(object $entity)
     {
         if (!$entity) {
-            throw new Exception(ErrorTypes::NOT_FOUND_ALBUM_ID);
+            throw new CustomException(ErrorTypes::NOT_FOUND_ALBUM_ID);
         }
     }
     public function checkRequiredAttributes(array $data, array $requiredAttributes)
     {
         foreach ($requiredAttributes as $attribute) {
             if (!isset($data[$attribute])) {
-                throw new Exception(ErrorTypes::MISSING_ATTRIBUTES);
+                throw new CustomException(ErrorTypes::MISSING_ATTRIBUTES);
             }
         }
     }
@@ -131,7 +132,7 @@ class ErrorManager
     {
         foreach ($requiredAttributes as $attribute) {
             if (!isset($data[$attribute])) {
-                throw new Exception(ErrorTypes::MISSING_ATTRIBUTES_LOGIN);
+                throw new CustomException(ErrorTypes::MISSING_ATTRIBUTES_LOGIN);
             }
         }
     }
@@ -142,35 +143,35 @@ class ErrorManager
         $age = $today->diff($birthdate)->y;
 
         if ($age < $minimumAge) {
-            throw new Exception(ErrorTypes::INVALID_AGE, $minimumAge);
+            throw new CustomException(ErrorTypes::INVALID_AGE, $minimumAge);
         }
     }
 
     public  function isValidPhoneNumber(string $phoneNumber)
     {
         if (!preg_match("/^0[0-9]{9}$/", $phoneNumber)) {
-            throw new Exception(ErrorTypes::INVALID_PHONE_NUMBER);
+            throw new CustomException(ErrorTypes::INVALID_PHONE_NUMBER);
         }
     }
 
     public  function isValidEmail(string $email)
     {
         if (!preg_match('/^[a-zA-Z0-9.%+-]+@[^\s@]+[a-zA-Z0-9.—-]+[\w.-]+.[a-zA-Z]{2,}$/', $email)) {
-            throw new Exception(ErrorTypes::INVALID_EMAIL);
+            throw new CustomException(ErrorTypes::INVALID_EMAIL);
         }
     }
 
     public  function isValidGender(string $gender)
     {
         if (!in_array($gender, [0, 1])) {
-            throw new Exception(ErrorTypes::INVALID_GENDER);
+            throw new CustomException(ErrorTypes::INVALID_GENDER);
         }
     }
 
     public function checkNotUniqueArtistName(object $existingArtist)
     {
         if ($existingArtist) {
-            throw new Exception(ErrorTypes::NOT_UNIQUE_ARTIST_NAME);
+            throw new CustomException(ErrorTypes::NOT_UNIQUE_ARTIST_NAME);
         }
     }
 
@@ -188,10 +189,10 @@ class ErrorManager
             $temprestant = $expiration->modify('+5 minutes')->diff($time)->format('%i');
             switch ($type) {
                 case 'password-lost':
-                    throw new Exception(ErrorTypes::TOO_MANY_PASSWORD_ATTEMPTS, $temprestant);
+                    throw new CustomException(ErrorTypes::TOO_MANY_PASSWORD_ATTEMPTS, $temprestant);
                     break;
                 case 'connection':
-                    throw new Exception(ErrorTypes::TOO_MANY_CONNECTION_ATTEMPTS, $temprestant);
+                    throw new CustomException(ErrorTypes::TOO_MANY_CONNECTION_ATTEMPTS, $temprestant);
                     break;
             }
         }
@@ -210,7 +211,7 @@ class ErrorManager
     public function IsLengthValid(string $field, int $maxlength)
     {
         if (strlen($field) > $maxlength) {
-            throw new Exception(ErrorTypes::INVALID_DATA_LENGTH);
+            throw new CustomException(ErrorTypes::INVALID_DATA_LENGTH);
         }
     }
 
