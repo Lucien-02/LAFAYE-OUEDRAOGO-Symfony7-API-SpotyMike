@@ -120,7 +120,7 @@ class LoginController extends  AbstractController
                 return new JsonResponse([
                     'success' => true,
                     'token' => $token,
-                    'message' => "Un email de réinitialisation de mot de passe a été envoyé à votre adresse email. Veuiller suivre les instructions contenues dans l'email pour réinitialiser votre mot de passe.",
+                    'message' => "Un email de réinitialisation de mot de passe a été envoyé à votre adresse email. Veuillez suivre les instructions contenues dans l'email pour réinitialiser votre mot de passe.",
                 ], 200);
             }
             // Gestion des erreurs inattendues
