@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
 use Exception;
+use CustomException;
 
 class LabelController extends AbstractController
 {
@@ -35,7 +36,7 @@ class LabelController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             parse_str($request->getContent(), $data);
 
             $labelsPerPage = 5;
@@ -83,7 +84,7 @@ class LabelController extends AbstractController
                 $currentSerializedContent = $nextPageLabelsSerialized;
                 $currentPage = $nextPage;
             }
- 
+
             $response = [
                 "error" => false,
                 "labels" => $currentSerializedContent,
@@ -101,9 +102,10 @@ class LabelController extends AbstractController
             return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -121,9 +123,10 @@ class LabelController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -150,9 +153,10 @@ class LabelController extends AbstractController
             ], 201);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -179,9 +183,10 @@ class LabelController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -202,9 +207,10 @@ class LabelController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 }
