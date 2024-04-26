@@ -105,7 +105,7 @@ class PlaylistController extends AbstractController
             $playlistsPerPage = 5;
             $numPage = $_GET["currentPage"];
             if ($numPage <= 0) {
-                throw new CustomException(ErrorTypes::NOT_FOUND_ARTIST);
+                throw new CustomException(ErrorTypes::INVALID_PAGE);
             }
             // Récupération page demandée
             $page = $request->query->getInt('currentPage', $numPage);
