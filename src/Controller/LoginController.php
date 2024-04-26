@@ -44,19 +44,21 @@ class LoginController extends  AbstractController
             $errorManager->checkRequiredLoginAttributes($data, ['email', 'password']);
             $email = $data['email'];
             $password = $data['password'];
-
+            // vérif format mail
+            $errorManager->isValidEmail($email);
+            $user = $this->repository->findOneByEmail($email);
+            $iduser = $user->getIdUser();
             //Gerer le nome de tentative de connection max
             //recup l'ip
 
-            $errorManager->tooManyAttempts(5, 300, $email, 'connection');
+            $errorManager->tooManyAttempts(5, 300, $iduser, 'connection');
 
-            // vérif format mail
-            $errorManager->isValidEmail($email);
+
 
             // vérif format mdp
             $errorManager->isValidPassword($password);
 
-            $user = $this->repository->findOneByEmail($email);
+
             // vérif Compte existant
             if (!$user) {
                 return $errorManager->generateError(ErrorTypes::USER_NOT_FOUND);
@@ -92,16 +94,16 @@ class LoginController extends  AbstractController
                 return $errorManager->generateError(ErrorTypes::MISSING_EMAIL);
             }
             $email = $data["email"];
+            $errorManager->isValidEmail($email);
+            $user = $this->repository->findOneByEmail($email);
+            $iduser = $user->getIdUser();
             //Gerer le nombre de tentative de connection max
             //recup l'email
-            $errorManager->tooManyAttempts(3, 300, $email, 'password-lost');
+            $errorManager->tooManyAttempts(3, 300, $iduser, 'password-lost');
 
 
             $email_found = $this->repository->findOneByEmail($email);
-            // vérif format mail
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return $errorManager->generateError(ErrorTypes::INVALID_EMAIL);
-            }
+
             //Email non trouvé
             if (!$email_found) {
                 return $errorManager->generateError(ErrorTypes::EMAIL_NOT_FOUND);
