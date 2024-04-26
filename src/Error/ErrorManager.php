@@ -147,7 +147,7 @@ class ErrorManager
 
     public  function isValidPhoneNumber(string $phoneNumber)
     {
-        if (!preg_match("/^[0-9]{10}$/", $phoneNumber)) {
+        if (!preg_match("/^0[0-9]{9}$/", $phoneNumber)) {
             throw new Exception(ErrorTypes::INVALID_PHONE_NUMBER);
         }
     }
@@ -213,7 +213,7 @@ class ErrorManager
 
         switch ($errorType) {
             case 'TooManyConnectionAttempts':
-                $errorMessage = "Trop de tentatives de connexion (5 max). Veuillez réessayer ultérieurement : $variable minutes restantes.";
+                $errorMessage = "Trop de tentatives de connexion (5 max). Veuillez réessayer ultérieurement - $variable min d'attente.";
                 $codeErreur = 429;
                 break;
             case 'TooManyPasswordAttempts':

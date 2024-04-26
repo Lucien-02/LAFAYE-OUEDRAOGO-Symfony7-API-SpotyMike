@@ -150,17 +150,12 @@ class UserController extends AbstractController
                 $phoneNumber = $data['tel'];
             }
             $ageMin = 12;
-            // vérif format mail
-            $this->errorManager->isValidEmail($email);
             // vérif format mdp
             $this->errorManager->isValidPassword($password);
             // vérif format date
             $this->errorManager->isValidDateFormat($birthday, 'd/m/Y');
 
             $dateOfBirth = \DateTime::createFromFormat('d/m/Y', $birthday)->format('Y-m-d');
-
-            // vérif age
-            $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
             
             $user = new User();
             
@@ -169,7 +164,16 @@ class UserController extends AbstractController
                 $this->errorManager->isValidPhoneNumber($phoneNumber);
                 $user->setTel($phoneNumber);
             }
+            else {
+                $user->setTel('');
+            }
 
+            // vérif format mail
+            $this->errorManager->isValidEmail($email);
+
+            // vérif age
+            $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
+            
             //vérif sexe
             if (isset($data['sexe'])) {
                 $this->errorManager->isValidGender($sexe);
@@ -180,6 +184,9 @@ class UserController extends AbstractController
                     $str_sexe = "Homme";
                 }
                 $user->setSexe($str_sexe);
+            }
+            else {
+                $user->setSexe("Homme");
             }
 
             //vérif email unique
