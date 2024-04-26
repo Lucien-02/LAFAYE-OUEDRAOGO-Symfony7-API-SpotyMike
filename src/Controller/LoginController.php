@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
 use Exception;
@@ -25,11 +26,13 @@ use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 class LoginController extends  AbstractController
 {
     private $repository;
+    private $cache;
     private $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, CacheItemPoolInterface $cache)
     {
         $this->entityManager = $entityManager;
+        $this->cache = $cache;
         $this->repository = $entityManager->getRepository(User::class);
     }
 
@@ -81,6 +84,7 @@ class LoginController extends  AbstractController
             return $errorManager->generateError($exception->getMessage(), $exception->getCode());
         }
     }
+
     // use Symfony\Component\HttpFoundation\Request;
     #[Route('/password-lost', name: 'app_password-lost', methods: ['POST'])]
     public function password_lost(Request $request, ErrorManager $errorManager, JWTTokenManagerInterface $JWTManager): JsonResponse
