@@ -187,30 +187,34 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/album/search', name: 'app_album_get_search', methods: ['GET'])]
-    public function get_album_search(int $id, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function get_album_search(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
 
-            if (empty($id)) {
-                return $this->errorManager->generateError(ErrorTypes::MISSING_ALBUM_ID);
+            parse_str($request->getContent(), $data);
+
+            if ((isset($data['label']) || isset($data['year']) || isset($data['featuring']) || isset($data['category']) || isset($data['limit']))){
+                $albums = $this->repository->findBy($data);
+                $this->errorManager->checkNotFoundAlbum($albums);
+
+                $album_serialized = [];
+                foreach ($albums as $album) {
+                    array_push($album_serialized, $album->serializer());
+                }
+
+                return new JsonResponse([
+                    "error" => false,
+                    "album" => $album->serializer()
+                ], 200);
             }
-
-            $album = $this->repository->find($id);
-            //dd($this->repository->findLabelsByAlbum($id));
-            $labels = $this->repository->findLabelsByAlbum($id);
-            $this->errorManager->checkNotFoundAlbumId($album);
-
-            foreach ($labels as $label) {
-                $labelId = $label->getLabelId();
-                $labelnom = $labelId->getNom();
+            else {
+                return $this->json([
+                    'error' => true,
+                    'message' => "Les paramètres fournis sont invalides. Veuillez vérifier les données soumises."
+                ], 400);
             }
-
-            return new JsonResponse([
-                "error" => false,
-                "album" => $album->serializer(false, $labelnom)
-            ], 200);
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
