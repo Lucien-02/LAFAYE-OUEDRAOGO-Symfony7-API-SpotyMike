@@ -226,7 +226,7 @@ class ErrorManager
                 $codeErreur = 429;
                 break;
             case 'TooManyPasswordAttempts':
-                $errorMessage = "Trop de demande de réinitialisation de mot de passe (3 max). Veuillez attendre avant de réessayer - $variable minutes restantes";
+                $errorMessage = "Trop de demandes de réinitialisation de mot de passe ( 3 max ). Veuillez attendre avant de réessayer ( Dans $variable min).";
                 $codeErreur = 429;
                 break;
             case 'MissingAttributes':
@@ -234,7 +234,7 @@ class ErrorManager
                 $codeErreur = 400;
                 break;
             case 'MissingEmail':
-                $errorMessage = 'Email manquant.Veuiller fournir  votre email  pour la récupération du mot de passe.';
+                $errorMessage = "Email manquant. Veuillez fournir votre email pour la récupération du mot de passe.";
                 $codeErreur = 400;
                 break;
             case 'MissingPassword':
@@ -250,7 +250,7 @@ class ErrorManager
                 $codeErreur = 400;
                 break;
             case 'InvalidEmail':
-                $errorMessage = "Le format de l'email est invalide.";
+                $errorMessage = "Le format de l'email est invalide. Veuillez entrer un email valide.";
                 $codeErreur = 400;
                 break;
             case 'InvalidDateFormat':
@@ -269,7 +269,7 @@ class ErrorManager
                 $errorMessage = 'Aucun utilisateur trouvé. Mot de passe ou identifiant incorrect.';
                 $codeErreur = 400;
             case 'EmailNotFound':
-                $errorMessage = "Aucun compte n'est associé à cet email.Veuiller vérifier et réessayer.";
+                $errorMessage = "Aucun compte n'est associé à cet email. Veuillez vérifier et réessayer.";
                 $codeErreur = 404;
                 break;
             case 'AccountNotActive':
