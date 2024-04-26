@@ -14,6 +14,7 @@ use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
 use DateTime;
 use Exception;
+use CustomException;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
@@ -104,9 +105,10 @@ class UserController extends AbstractController
             return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -121,9 +123,10 @@ class UserController extends AbstractController
             return $this->json($user->serializer());
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+        } catch (Exception $exception) {
         }
     }
 
@@ -167,8 +170,7 @@ class UserController extends AbstractController
             if (isset($data['tel'])) {
                 $this->errorManager->isValidPhoneNumber($phoneNumber);
                 $user->setTel($phoneNumber);
-            }
-            else {
+            } else {
                 $user->setTel('');
             }
 
@@ -177,7 +179,7 @@ class UserController extends AbstractController
 
             // vérif age
             $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
-            
+
             //vérif sexe
             if (isset($data['sexe'])) {
                 $this->errorManager->isValidGender($sexe);
@@ -187,8 +189,7 @@ class UserController extends AbstractController
                     $str_sexe = "Homme";
                 }
                 $user->setSexe($str_sexe);
-            }
-            else {
+            } else {
                 $user->setSexe("Homme");
             }
 
@@ -230,9 +231,10 @@ class UserController extends AbstractController
             ], 201);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+        } catch (Exception $exception) {
         }
     }
 
@@ -292,7 +294,7 @@ class UserController extends AbstractController
                 if ($alredytel == null) {
                     $request_user->setTel($data['tel']);
                 } else {
-                    throw new Exception(ErrorTypes::NOT_UNIQUE_TEL);
+                    throw new CustomException(ErrorTypes::NOT_UNIQUE_TEL);
                 }
             }
             if (isset($data['encrypte'])) {
@@ -314,9 +316,10 @@ class UserController extends AbstractController
             ]);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+        } catch (Exception $exception) {
         }
     }
 
@@ -337,9 +340,10 @@ class UserController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+        } catch (Exception $exception) {
         }
     }
 
@@ -353,7 +357,7 @@ class UserController extends AbstractController
             $user = $this->repository->findOneBy(['email' => $email]);
 
             if (!$user->getActive()) {
-                throw new Exception(ErrorTypes::ACCOUNT_ALREADY_DESACTIVATE);
+                throw new CustomException(ErrorTypes::ACCOUNT_ALREADY_DESACTIVATE);
             }
 
             $user->setActive(false);
@@ -366,9 +370,10 @@ class UserController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+        } catch (Exception $exception) {
         }
     }
 }
