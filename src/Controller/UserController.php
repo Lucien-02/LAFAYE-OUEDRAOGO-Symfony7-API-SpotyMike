@@ -260,9 +260,21 @@ class UserController extends AbstractController
                 $request_user->setIdUser($data['id_user']);
             }
             if (isset($data['firstname'])) {
+                if (strlen($data['firstname']) > 55) {
+                    return new JsonResponse([
+                        'error' => true,
+                        'message' => 'Erreur de validation des données.'
+                    ], 422);
+                }
                 $request_user->setFirstname($data['firstname']);
             }
             if (isset($data['lastname'])) {
+                if (strlen($data['lastname']) > 55) {
+                    return new JsonResponse([
+                        'error' => true,
+                        'message' => 'Erreur de validation des données.'
+                    ], 422);
+                }
                 $request_user->setLastname($data['lastname']);
             }
             if (isset($data['email'])) {
@@ -275,7 +287,15 @@ class UserController extends AbstractController
             }
             if (isset($data['tel'])) {
                 $this->errorManager->isValidPhoneNumber($data['tel']);
-                $request_user->setTel($data['tel']);
+                $alredytel = $this->repository->findOneBy(['tel' => $data['tel']]);
+                if ($alredytel == null) {
+                    $request_user->setTel($data['tel']);
+                } else {
+                    return new JsonResponse([
+                        'error' => true,
+                        'message' => 'Conflit de données. Le numéro de téléphone est déjà utilisé par un autre utilisateur.'
+                    ], 409);
+                }
             }
             if (isset($data['encrypte'])) {
                 // vérif format mdp
