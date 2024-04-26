@@ -15,6 +15,7 @@ use App\Entity\User;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
 use Exception;
+use CustomException;
 
 class PlaylistController extends AbstractController
 {
@@ -26,7 +27,7 @@ class PlaylistController extends AbstractController
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-        
+
         $this->repository = $entityManager->getRepository(Playlist::class);
     }
 
@@ -45,11 +46,12 @@ class PlaylistController extends AbstractController
                 'error' => false,
                 'message' => "Votre playlist a été supprimée avec succès."
             ], 200);
-        
+
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -58,12 +60,12 @@ class PlaylistController extends AbstractController
     {
         try {
             parse_str($request->getContent(), $data);
-            
+
             $this->errorManager->checkRequiredAttributes($data, ['title', 'public', 'idplaylist']);
-            
+
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $uniqueId = uniqid();
-        
+
             //Recherche si le user est deja un artiste
             $user = $this->entityManager->getRepository(User::class)->find($data['user_id']);
 
@@ -82,11 +84,12 @@ class PlaylistController extends AbstractController
                 'error' => false,
                 'message' => "Playlist créée avec succès."
             ], 201);
-    
+
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -96,12 +99,14 @@ class PlaylistController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             parse_str($request->getContent(), $data);
 
             $playlistsPerPage = 5;
             $numPage = $_GET["currentPage"];
-
+            if ($numPage <= 0) {
+                throw new CustomException(ErrorTypes::NOT_FOUND_ARTIST);
+            }
             // Récupération page demandée
             $page = $request->query->getInt('currentPage', $numPage);
 
@@ -144,7 +149,7 @@ class PlaylistController extends AbstractController
                 $currentSerializedContent = $nextPagePlaylistsSerialized;
                 $currentPage = $nextPage;
             }
- 
+
             $response = [
                 "error" => false,
                 "playlists" => $currentSerializedContent,
@@ -162,9 +167,10 @@ class PlaylistController extends AbstractController
             return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -194,16 +200,17 @@ class PlaylistController extends AbstractController
                 'error' => false,
                 'message' => "Playlist mise à jour avec succès."
             ], 200);
-    
+
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
     #[Route('/playlist/{id}', name: 'app_playlist', methods: ['GET'])]
-    public function get_playlist_by_id( $id): JsonResponse
+    public function get_playlist_by_id($id): JsonResponse
     {
         try {
             $playlist = $this->repository->find($id);
@@ -217,11 +224,12 @@ class PlaylistController extends AbstractController
                 'create_at' => $playlist->getCreateAt(),
                 'update_at' => $playlist->getUpdateAt(),
             ], 200);
-    
+
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 }
