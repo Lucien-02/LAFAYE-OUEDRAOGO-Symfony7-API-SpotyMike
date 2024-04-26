@@ -14,7 +14,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Psr\Cache\CacheItemPoolInterface;
 use App\Error\ErrorTypes;
 use App\Error\ErrorManager;
 use Exception;
@@ -26,13 +25,11 @@ use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 class LoginController extends  AbstractController
 {
     private $repository;
-    private $cache;
     private $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager, CacheItemPoolInterface $cache)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->cache = $cache;
         $this->repository = $entityManager->getRepository(User::class);
     }
 
@@ -53,11 +50,8 @@ class LoginController extends  AbstractController
 
             $errorManager->tooManyAttempts(5, 300, $email, 'connection');
 
-
             // vérif format mail
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return $errorManager->generateError(ErrorTypes::INVALID_EMAIL);
-            }
+            $errorManager->isValidEmail($email);
 
             // vérif format mdp
             $errorManager->isValidPassword($password);
@@ -161,13 +155,11 @@ class LoginController extends  AbstractController
                 }
             }
 
-            parse_str($request->getContent(), $data);
-
-            if (!isset($data["password"])) {
+            if (!isset($_GET["password"])) {
                 return $errorManager->generateError(ErrorTypes::MISSING_PASSWORD);
             }
 
-            $password = $data["password"];
+            $password = $_GET["password"];
 
             $errorManager->isValidPassword($password);
             $user = $this->repository->findOneByEmail($email);
