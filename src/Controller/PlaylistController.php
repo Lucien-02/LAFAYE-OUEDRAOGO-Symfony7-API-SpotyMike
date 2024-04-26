@@ -100,10 +100,10 @@ class PlaylistController extends AbstractController
             parse_str($request->getContent(), $data);
 
             $playlistsPerPage = 5;
-            $numPage = $data["page"];
+            $numPage = $_GET["currentPage"];
 
             // Récupération page demandée
-            $page = $request->query->getInt('page', $numPage);
+            $page = $request->query->getInt('currentPage', $numPage);
 
             $offset = ($page - 1) * $playlistsPerPage;
 
