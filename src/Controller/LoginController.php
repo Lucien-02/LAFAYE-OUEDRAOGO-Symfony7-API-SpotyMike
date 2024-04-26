@@ -19,7 +19,7 @@ use App\Error\ErrorManager;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
-
+use CustomException;
 
 
 class LoginController extends  AbstractController
@@ -78,9 +78,10 @@ class LoginController extends  AbstractController
                 ], 200);
             }
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
     // use Symfony\Component\HttpFoundation\Request;
@@ -120,9 +121,10 @@ class LoginController extends  AbstractController
                 ], 200);
             }
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
     #[Route('/reset-password/{token}', name: 'app_reset-password', methods: ['GET'])]
@@ -155,6 +157,7 @@ class LoginController extends  AbstractController
                 } else {
                     return $errorManager->generateError(ErrorTypes::TOKEN_INVALID_MISSING);
                 }
+            } catch (Exception $exception) {
             }
 
             if (!isset($_GET["password"])) {
@@ -179,9 +182,10 @@ class LoginController extends  AbstractController
 
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 }
