@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Album;
+use App\Repository\AlbumRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -143,7 +144,7 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/album/{id}', name: 'app_album_put', methods: ['PUT'])]
-    public function putAlbum(Request $request, int $id, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function putAlbum(Request $request, int $id, TokenInterface $token, JWTTokenManagerInterface $JWTManager, AlbumRepository $albumRepository): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
@@ -225,7 +226,7 @@ class AlbumController extends AbstractController
 
 
     #[Route('/album/{id}', name: 'app_album_get_by_id', methods: ['GET'])]
-    public function get_album_by_id(int $id, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function get_album_by_id(int $id, TokenInterface $token, JWTTokenManagerInterface $JWTManager, AlbumRepository $albumRepository): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
@@ -241,7 +242,7 @@ class AlbumController extends AbstractController
 
             return new JsonResponse([
                 "error" => false,
-                "album" => $album->serializer()
+                "album" => $album->serializer(false, $albumRepository)
             ], 200);
 
             // Gestion des erreurs inattendues
@@ -252,7 +253,7 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/albums', name: 'app_albums_get', methods: ['GET'])]
-    public function get_all_albums(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function get_all_albums(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager, AlbumRepository $albumRepository): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
@@ -274,7 +275,7 @@ class AlbumController extends AbstractController
 
             $album_serialized = [];
             foreach ($albums as $album) {
-                array_push($album_serialized, $album->serializer());
+                array_push($album_serialized, $album->serializer(false, $albumRepository));
             }
 
             $totalAlbums = count($this->repository->findAll());
@@ -293,7 +294,7 @@ class AlbumController extends AbstractController
 
                 $nextPageAlbumsSerialized = [];
                 foreach ($nextPageAlbums as $album) {
-                    array_push($nextPageAlbumsSerialized, $album->serializer());
+                    array_push($nextPageAlbumsSerialized, $album->serializer(false, $albumRepository));
                 }
             }
 
@@ -305,16 +306,8 @@ class AlbumController extends AbstractController
                 $currentSerializedContent = $nextPageAlbumsSerialized;
                 $currentPage = $nextPage;
                 $id = $album->getId();
-                $labelnom = null;
-                $labels = $this->repository->findLabelsByAlbum($id);
 
-                if (!empty($labels)) {
-                    foreach ($labels as $label) {
-                        $labelId = $label->getLabelId();
-                        $labelnom = $labelId->getNom();
-                    }
-                }
-                $serializedAlbums[] = $album->serializer(false, $labelnom);
+                $serializedAlbums[] = $album->serializer(false, $albumRepository);
             }
 
             $response = [

@@ -160,7 +160,7 @@ class ArtistController extends AbstractController
     }
 
     #[Route('/artist', name: 'app_artists_get', methods: ['GET'])]
-    public function get_all_artists(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function get_all_artists(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager, AlbumRepository $albumRepository): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
@@ -182,7 +182,7 @@ class ArtistController extends AbstractController
 
             $artist_serialized = [];
             foreach ($artists as $artist) {
-                array_push($artist_serialized, $artist->serializer());
+                array_push($artist_serialized, $artist->serializer(false, $albumRepository));
             }
 
             $totalArtists = count($this->repository->findAll());
@@ -201,7 +201,7 @@ class ArtistController extends AbstractController
 
                 $nextPageArtistsSerialized = [];
                 foreach ($nextPageArtists as $artist) {
-                    array_push($nextPageArtistsSerialized, $artist->serializer());
+                    array_push($nextPageArtistsSerialized, $artist->serializer(false, $albumRepository));
                 }
             }
 
@@ -239,7 +239,7 @@ class ArtistController extends AbstractController
     }
 
     #[Route('/artist/{fullname}', name: 'app_artist', methods: ['GET'])]
-    public function get_artist_by_id(TokenInterface $token, string $fullname, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function get_artist_by_id(TokenInterface $token, string $fullname, JWTTokenManagerInterface $JWTManager, AlbumRepository $albumRepository): JsonResponse
     {
         try {
             if ($fullname == " ") {
@@ -277,7 +277,7 @@ class ArtistController extends AbstractController
             }
             return $this->json([
                 "error" => false,
-                "artist" => $artist->serializer($owner),
+                "artist" => $artist->serializer($owner, $albumRepository),
             ], 200);
 
             // Gestion des erreurs inattendues

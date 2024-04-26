@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use App\Repository\AlbumRepository;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -236,7 +237,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->getEmail();
     }
 
-    public function serializer()
+    public function serializer(AlbumRepository $albumRepository)
     {
         if ($_SERVER['REQUEST_URI'] == '/register') {
             return [
@@ -256,7 +257,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 "email" => $this->getEmail(),
                 "tel" => $this->getTel(),
                 "sexe" => $this->getSexe(),
-                "artist" => $this->getArtist() ? $this->getArtist()->serializer() : [],
+                "artist" => $this->getArtist() ? $this->getArtist()->serializer(false, $albumRepository) : [],
                 "dateBirth" => $this->getDateBirth()->format('d/m/Y'),
                 "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s')
             ];

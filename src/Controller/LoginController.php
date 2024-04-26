@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use DateTime;
+use App\Repository\AlbumRepository;
 use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,7 +38,7 @@ class LoginController extends  AbstractController
 
     // use Symfony\Component\HttpFoundation\Request;
     #[Route('/login', name: 'app_login_post', methods: ['POST', 'PUT'])]
-    public function login(Request $request, JWTTokenManagerInterface $JWTManager, UserPasswordHasherInterface $passwordHash, ErrorManager $errorManager): JsonResponse
+    public function login(Request $request, JWTTokenManagerInterface $JWTManager, UserPasswordHasherInterface $passwordHash, ErrorManager $errorManager, AlbumRepository $albumRepository): JsonResponse
     {
         try {
             //Gerer le nome de tentative de connection max
@@ -74,7 +75,7 @@ class LoginController extends  AbstractController
                 return new JsonResponse([
                     'error' => false,
                     'message' => "L'utilisateur a été authentifié avec succès",
-                    'user' => $user->serializer(),
+                    'user' => $user->serializer($albumRepository),
                     'token' => $token,
                 ], 200);
             }
@@ -92,7 +93,7 @@ class LoginController extends  AbstractController
             //Gerer le nombre de tentative de connection max
             //recup l'ip
             $ip = $request->getClientIp();
-            $errorManager->tooManyAttempts(20, 300, $ip, 'password-lost');
+            $errorManager->tooManyAttempts(3, 300, $ip, 'password-lost');
 
             parse_str($request->getContent(), $data);
             //Email manquant

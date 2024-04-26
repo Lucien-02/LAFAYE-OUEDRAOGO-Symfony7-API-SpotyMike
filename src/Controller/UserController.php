@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\AlbumRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -37,7 +38,7 @@ class UserController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             parse_str($request->getContent(), $data);
 
             $usersPerPage = 5;
@@ -85,7 +86,7 @@ class UserController extends AbstractController
                 $currentSerializedContent = $nextPageUsersSerialized;
                 $currentPage = $nextPage;
             }
- 
+
             $response = [
                 "error" => false,
                 "users" => $currentSerializedContent,
@@ -127,7 +128,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/register', name: 'app_register', methods: 'POST')]
-    public function register(Request $request, UserPasswordHasherInterface $passwordHash): JsonResponse
+    public function register(Request $request, UserPasswordHasherInterface $passwordHash, AlbumRepository $albumRepository): JsonResponse
     {
         try {
             parse_str($request->getContent(), $data);
@@ -155,9 +156,9 @@ class UserController extends AbstractController
             $this->errorManager->isValidPassword($password);
             // vérif format date
             $this->errorManager->isValidDateFormat($birthday, 'd/m/Y');
-            
+
             $dateOfBirth = \DateTime::createFromFormat('d/m/Y', $birthday)->format('Y-m-d');
-            
+
             // vérif age
             $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
             
@@ -202,9 +203,9 @@ class UserController extends AbstractController
 
             $this->entityManager->flush();
 
-            if (isset($data['avatar'])){
+            if (isset($data['avatar'])) {
                 $explodeData = explode(",", $data['avatar']);
-                if(count($explodeData) == 2){
+                if (count($explodeData) == 2) {
                     $file = base64_decode($explodeData[1]);
                     $chemin = $this->getParameter('upload_directory') . '/' . $user->getEmail();
                     mkdir($chemin);
@@ -215,7 +216,7 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "L'utilisateur a bien été créé avec succès.",
-                'user' => $user->serializer()
+                'user' => $user->serializer($albumRepository)
             ], 201);
 
             // Gestion des erreurs inattendues
@@ -234,7 +235,7 @@ class UserController extends AbstractController
             $email = $decodedtoken['username'];
             $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             parse_str($request->getContent(), $data);
-            
+
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return new JsonResponse([
                     'error' => 'Adresse email invalide',
@@ -250,7 +251,7 @@ class UserController extends AbstractController
                     ], JsonResponse::HTTP_CONFLICT);
                 }
             }
-            
+
             if (isset($data['id_user'])) {
                 $request_user->setIdUser($data['id_user']);
             }
@@ -285,8 +286,8 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => false,
                 'message' => "Votre inscription a bien été prise en compte."
-            ], 201);
-            
+            ]);
+
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
@@ -317,7 +318,7 @@ class UserController extends AbstractController
         }
     }
 
-    #[Route('/account-desactivation', name: 'app_user_delete', methods: 'DELETE')]
+    #[Route('/account-deactivation', name: 'app_user_delete', methods: 'DELETE')]
     public function account_desactivation(TokenInterface $token, JWTTokenManagerInterface $JWTManager, ErrorManager $errorManager): JsonResponse
     {
         try {
