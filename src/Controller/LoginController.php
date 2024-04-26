@@ -155,13 +155,11 @@ class LoginController extends  AbstractController
                 }
             }
 
-            parse_str($request->getContent(), $data);
-
-            if (!isset($data["password"])) {
+            if (!isset($_GET["password"])) {
                 return $errorManager->generateError(ErrorTypes::MISSING_PASSWORD);
             }
 
-            $password = $data["password"];
+            $password = $_GET["password"];
 
             $errorManager->isValidPassword($password);
             $user = $this->repository->findOneByEmail($email);
