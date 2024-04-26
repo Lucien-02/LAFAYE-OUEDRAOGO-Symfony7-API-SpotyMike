@@ -251,7 +251,7 @@ class ErrorManager
                 $codeErreur = 400;
                 break;
             case 'InvalidEmail':
-                $errorMessage = "Le format de l'email est invalide. Veuillez entrer un email valide.";
+                $errorMessage = "Le format de l'email est invalide.";
                 $codeErreur = 400;
                 break;
             case 'InvalidDateFormat':
