@@ -16,6 +16,7 @@ use App\Repository\AlbumRepository;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use CustomException;
 
 class ArtistController extends AbstractController
 {
@@ -57,7 +58,7 @@ class ArtistController extends AbstractController
         ], 200);
 
         // Gestion des erreurs inattendues
-        throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
+        throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
     }
 
     #[Route('/artist', name: 'post_artist', methods: 'POST')]
@@ -112,7 +113,7 @@ class ArtistController extends AbstractController
                 // Recherche d'un artiste avec le même nom dans la base de données
                 $fullname_exist = $this->repository->findOneBy(['fullname' =>  $data['fullname']]);
                 if ($fullname_exist) {
-                    throw new Exception(ErrorTypes::NOT_UNIQUE_ARTIST_NAME);
+                    throw new CustomException(ErrorTypes::NOT_UNIQUE_ARTIST_NAME);
                 }
 
                 $artist = new Artist();
@@ -153,9 +154,10 @@ class ArtistController extends AbstractController
             $this->errorManager->checkNotFoundArtistId($user);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -232,9 +234,10 @@ class ArtistController extends AbstractController
             return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -281,9 +284,10 @@ class ArtistController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 }
