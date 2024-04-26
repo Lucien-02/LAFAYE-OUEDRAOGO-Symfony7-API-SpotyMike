@@ -156,9 +156,13 @@ class UserController extends AbstractController
             $this->errorManager->isValidDateFormat($birthday, 'd/m/Y');
 
             $dateOfBirth = \DateTime::createFromFormat('d/m/Y', $birthday)->format('Y-m-d');
-            
+
+
+            // vérif age
+            $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
+
             $user = new User();
-            
+
             //vérif tel
             if (isset($data['tel'])) {
                 $this->errorManager->isValidPhoneNumber($phoneNumber);
@@ -177,10 +181,9 @@ class UserController extends AbstractController
             //vérif sexe
             if (isset($data['sexe'])) {
                 $this->errorManager->isValidGender($sexe);
-                if ($sexe == 0){
+                if ($sexe == 0) {
                     $str_sexe = "Femme";
-                }
-                else if ($sexe == 1){
+                } else if ($sexe == 1) {
                     $str_sexe = "Homme";
                 }
                 $user->setSexe($str_sexe);
@@ -193,7 +196,7 @@ class UserController extends AbstractController
             if ($this->repository->findOneByEmail($email)) {
                 return $this->errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
             }
-            
+
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $user->setCreateAt($date);
             $user->setUpdateAt($date);
@@ -229,7 +232,7 @@ class UserController extends AbstractController
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-           return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
         }
     }
 
@@ -258,24 +261,39 @@ class UserController extends AbstractController
                     ], JsonResponse::HTTP_CONFLICT);
                 }
             }
-
+            if (empty($data)) {
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'Les données fournies sont invalides ou incomplètes.'
+                ], 400);
+            }
             if (isset($data['id_user'])) {
                 $request_user->setIdUser($data['id_user']);
             }
             if (isset($data['firstname'])) {
+                $this->errorManager->IsLengthValid($data['firstname'], 55);
                 $request_user->setFirstname($data['firstname']);
             }
             if (isset($data['lastname'])) {
+                $this->errorManager->IsLengthValid($data['lastname'], 55);
                 $request_user->setLastname($data['lastname']);
             }
             if (isset($data['email'])) {
+                $this->errorManager->isValidEmail($data['email']);
                 $request_user->setEmail($data['email']);
             }
             if (isset($data['sexe'])) {
+                $this->errorManager->isValidGender($data['sexe']);
                 $request_user->setSexe($data['sexe']);
             }
             if (isset($data['tel'])) {
-                $request_user->setTel($data['tel']);
+                $this->errorManager->isValidPhoneNumber($data['tel']);
+                $alredytel = $this->repository->findOneBy(['tel' => $data['tel']]);
+                if ($alredytel == null) {
+                    $request_user->setTel($data['tel']);
+                } else {
+                    throw new Exception(ErrorTypes::NOT_UNIQUE_TEL);
+                }
             }
             if (isset($data['encrypte'])) {
                 // vérif format mdp
@@ -292,7 +310,7 @@ class UserController extends AbstractController
 
             return new JsonResponse([
                 'error' => false,
-                'message' => "Votre inscription a bien été prise en compte."
+                'message' => 'Votre inscription a bien été prise en compte'
             ]);
 
             // Gestion des erreurs inattendues

@@ -207,6 +207,14 @@ class ErrorManager
         $this->cache->save($item);
     }
 
+    public function IsLengthValid(string $field, int $maxlength)
+    {
+        if (strlen($field) > $maxlength) {
+            throw new Exception(ErrorTypes::INVALID_DATA_LENGTH);
+        }
+    }
+
+
     public function generateError(string $errorType, string $variable = null): JsonResponse
     {
         $errorMessage = '';
@@ -218,7 +226,7 @@ class ErrorManager
                 $codeErreur = 429;
                 break;
             case 'TooManyPasswordAttempts':
-                $errorMessage = "Trop de demande de réinitialisation de mot de passe (3 max). Veuillez attendre avant de réessayer - $variable minutes restantes";
+                $errorMessage = "Trop de demandes de réinitialisation de mot de passe ( 3 max ). Veuillez attendre avant de réessayer ( Dans $variable min).";
                 $codeErreur = 429;
                 break;
             case 'MissingAttributes':
@@ -226,7 +234,7 @@ class ErrorManager
                 $codeErreur = 400;
                 break;
             case 'MissingEmail':
-                $errorMessage = 'Email manquant.Veuiller fournir  votre email  pour la récupération du mot de passe.';
+                $errorMessage = "Email manquant. Veuillez fournir votre email pour la récupération du mot de passe.";
                 $codeErreur = 400;
                 break;
             case 'MissingPassword':
@@ -242,7 +250,7 @@ class ErrorManager
                 $codeErreur = 400;
                 break;
             case 'InvalidEmail':
-                $errorMessage = "Le format de l'email est invalide.";
+                $errorMessage = "Le format de l'email est invalide. Veuillez entrer un email valide.";
                 $codeErreur = 400;
                 break;
             case 'InvalidDateFormat':
@@ -261,7 +269,7 @@ class ErrorManager
                 $errorMessage = 'Aucun utilisateur trouvé. Mot de passe ou identifiant incorrect.';
                 $codeErreur = 400;
             case 'EmailNotFound':
-                $errorMessage = "Aucun compte n'est associé à cet email.Veuiller vérifier et réessayer.";
+                $errorMessage = "Aucun compte n'est associé à cet email. Veuillez vérifier et réessayer.";
                 $codeErreur = 404;
                 break;
             case 'AccountNotActive':
@@ -282,6 +290,10 @@ class ErrorManager
                 break;
             case 'NotUniqueEmail':
                 $errorMessage = 'Cet email est déjà utilisé par un autre compte.';
+                $codeErreur = 409;
+                break;
+            case 'NotUniqueTel':
+                $errorMessage = 'Conflit de données. Le numéro de téléphone est déjà utilisé par un autre utilisateur.';
                 $codeErreur = 409;
                 break;
             case 'NotFoundArtist':
@@ -352,6 +364,11 @@ class ErrorManager
                 $errorMessage = "Le compte est déja désactivé.";
                 $codeErreur = 409;
                 break;
+            case 'InvalidDataLength':
+                $errorMessage = 'Erreur de validation des données.';
+                $codeErreur = 422;
+                break;
+
             default:
                 $errorMessage = 'Erreur inconnue.';
                 $codeErreur = 400;
