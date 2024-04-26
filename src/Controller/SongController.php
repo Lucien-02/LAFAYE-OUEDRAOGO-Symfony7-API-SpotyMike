@@ -14,6 +14,7 @@ use App\Entity\Album;
 use App\Error\ErrorManager;
 use App\Error\ErrorTypes;
 use Exception;
+use CustomException;
 
 class SongController extends AbstractController
 {
@@ -34,7 +35,7 @@ class SongController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             parse_str($request->getContent(), $data);
 
             $songsPerPage = 5;
@@ -82,7 +83,7 @@ class SongController extends AbstractController
                 $currentSerializedContent = $nextPageSongsSerialized;
                 $currentPage = $nextPage;
             }
- 
+
             $response = [
                 "error" => false,
                 "songs" => $currentSerializedContent,
@@ -100,9 +101,10 @@ class SongController extends AbstractController
             return $this->json($response, 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -129,9 +131,10 @@ class SongController extends AbstractController
                 'visibility' => $song->isVisibility()
             ], 200);
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -168,9 +171,10 @@ class SongController extends AbstractController
             ], 201);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -204,11 +208,12 @@ class SongController extends AbstractController
                 'error' => false,
                 'message' => "Son mis à jour avec succès."
             ], 200);
-        
+
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 
@@ -229,9 +234,10 @@ class SongController extends AbstractController
             ], 200);
 
             // Gestion des erreurs inattendues
-            throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
-        } catch (Exception $exception) {
+            throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
+        } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
+        } catch (Exception $exception) {
         }
     }
 }
