@@ -188,31 +188,34 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/album/search', name: 'app_album_get_search', methods: ['GET'])]
-    public function get_album_search(int $id, TokenInterface $token, JWTTokenManagerInterface $JWTManager, AlbumRepository $albumRepository): JsonResponse
+    public function get_album_search(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
 
-            if (empty($id)) {
-                return $this->errorManager->generateError(ErrorTypes::MISSING_ALBUM_ID);
-            }
+            parse_str($request->getContent(), $data);
 
-            $album = $this->repository->find($id);
-            /*
-            //dd($this->repository->findLabelsByAlbum($id));
-            $labels = $this->repository->findLabelsByAlbum($id);
-            $this->errorManager->checkNotFoundAlbumId($album);
+            if ((isset($data['label']) || isset($data['year']) || isset($data['featuring']) || isset($data['category']) || isset($data['limit']))){
+                $albums = $this->repository->findBy($data);
+                $this->errorManager->checkNotFoundAlbum($albums);
 
-            foreach ($labels as $label) {
-                $labelId = $label->getLabelId();
-                $labelnom = $labelId->getNom();
+                $album_serialized = [];
+                foreach ($albums as $album) {
+                    array_push($album_serialized, $album->serializer());
+                }
+
+                return new JsonResponse([
+                    "error" => false,
+                    "album" => $album->serializer()
+                ], 200);
             }
-*/
-            return new JsonResponse([
-                "error" => false,
-                "album" => $album->serializer(false, $albumRepository)
-            ], 200);
+            else {
+                return $this->json([
+                    'error' => true,
+                    'message' => "Les paramètres fournis sont invalides. Veuillez vérifier les données soumises."
+                ], 400);
+            }
 
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);

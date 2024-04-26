@@ -151,10 +151,7 @@ class UserController extends AbstractController
             }
             $ageMin = 12;
             // vérif format mail
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                return $this->errorManager->generateError(ErrorTypes::INVALID_EMAIL);
-            }
-
+            $this->errorManager->isValidEmail($email);
             // vérif format mdp
             $this->errorManager->isValidPassword($password);
             // vérif format date
@@ -164,24 +161,32 @@ class UserController extends AbstractController
 
             // vérif age
             $this->errorManager->isAgeValid($dateOfBirth, $ageMin);
-
+            
+            $user = new User();
+            
             //vérif tel
             if (isset($data['tel'])) {
                 $this->errorManager->isValidPhoneNumber($phoneNumber);
+                $user->setTel($phoneNumber);
             }
 
             //vérif sexe
             if (isset($data['sexe'])) {
                 $this->errorManager->isValidGender($sexe);
+                if ($sexe == 0){
+                    $str_sexe = "Femme";
+                }
+                else if ($sexe == 1){
+                    $str_sexe = "Homme";
+                }
+                $user->setSexe($str_sexe);
             }
 
             //vérif email unique
             if ($this->repository->findOneByEmail($email)) {
                 return $this->errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
             }
-
-            $user = new User();
-
+            
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $user->setCreateAt($date);
             $user->setUpdateAt($date);
@@ -189,7 +194,6 @@ class UserController extends AbstractController
             $user->setFirstname($firstname);
             $user->setLastname($lastname);
             $user->setDateBirth(new DateTime($dateOfBirth));
-            $user->setSexe($sexe);
             $user->setEmail($email);
             $hash = $passwordHash->hashPassword($user, $password);
             $user->setPassword($hash);
@@ -218,7 +222,7 @@ class UserController extends AbstractController
             // Gestion des erreurs inattendues
             throw new Exception(ErrorTypes::UNEXPECTED_ERROR);
         } catch (Exception $exception) {
-            return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
+           return (($this->errorManager->generateError($exception->getMessage(), $exception->getCode())));
         }
     }
 
