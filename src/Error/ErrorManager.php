@@ -369,6 +369,10 @@ class ErrorManager
                 $errorMessage = 'Erreur de validation des données.';
                 $codeErreur = 422;
                 break;
+            case 'InvalidPage':
+                $errorMessage = "Le paramètre de pagination est invalide. Veuillez fournir un numéro de page valide.";
+                $codeErreur = 400;
+                break;
 
             default:
                 $errorMessage = 'Erreur inconnue.';
