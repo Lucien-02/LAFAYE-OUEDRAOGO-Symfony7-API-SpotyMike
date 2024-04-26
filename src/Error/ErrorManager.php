@@ -207,6 +207,13 @@ class ErrorManager
         $this->cache->save($item);
     }
 
+    public function IsLengthValid(string $field, int $maxlength)
+    {
+        if (strlen($field) > $maxlength) {
+            throw new Exception(ErrorTypes::VALIDDATALENGTH);
+        }
+    }
+
     public function generateError(string $errorType, string $variable = null): JsonResponse
     {
         $errorMessage = '';
@@ -351,6 +358,10 @@ class ErrorManager
             case 'AccountAlreadyDesactivate':
                 $errorMessage = "Le compte est déja désactivé.";
                 $codeErreur = 409;
+                break;
+            case 'ValidDataLength':
+                $errorMessage = 'Erreur de validation des données.';
+                $codeErreur = 422;
                 break;
             default:
                 $errorMessage = 'Erreur inconnue.';

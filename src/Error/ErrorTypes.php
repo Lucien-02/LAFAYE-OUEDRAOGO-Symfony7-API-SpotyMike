@@ -39,4 +39,5 @@ class ErrorTypes
     public const TOKEN_INVALID_MISSING = 'TokenInvalidMissing';
     public const TOKEN_PASSWORD_EXPIRE = 'TokenPasswordExpire';
     public const ACCOUNT_ALREADY_DESACTIVATE = 'AccountAlreadyDesactivate';
+    public const VALIDDATALENGTH = 'ValidDataLength';
 }
