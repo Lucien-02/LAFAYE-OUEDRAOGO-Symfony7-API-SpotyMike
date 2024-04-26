@@ -34,6 +34,7 @@ class ErrorManager
             throw new Exception(ErrorTypes::INVALID_DATE_FORMAT);
         }
     }
+
     public function isValidPassword(string $password)
     {
         if (!(strlen($password) >= 8 &&
@@ -166,17 +167,17 @@ class ErrorManager
         }
     }
 
-    public  function tooManyAttempts(int $maxAttempts, int $interval, string $ip, string $type)
+    public  function tooManyAttempts(int $maxAttempts, int $interval, string $email, string $type)
     {
 
 
-        // Récupérer le nombre de tentatives de connexion pour cette adresse IP dans le cache
-        $attempts = $this->cache->getItem('login_attempts_' . $ip)->get() ?: 0;
+        // Récupérer le nombre de tentatives de connexion pour cette adresse email dans le cache
+        $attempts = $this->cache->getItem('login_attempts_' . $email)->get() ?: 0;
         $timezone = new \DateTimeZone('Europe/Paris');
         $time = new DateTime('now', $timezone);
         // Vérifier si le nombre de tentatives a dépassé la limite
         if ($attempts >= $maxAttempts) {
-            $expiration = $this->cache->getItem('expiration_' . $ip)->get();
+            $expiration = $this->cache->getItem('expiration_' . $email)->get();
             $temprestant = $expiration->modify('+5 minutes')->diff($time)->format('%i');
             switch ($type) {
                 case 'password-lost':
@@ -188,8 +189,8 @@ class ErrorManager
             }
         }
         $attempts++;
-        $item = $this->cache->getItem('login_attempts_' . $ip);
-        $expiration = $this->cache->getItem('expiration_' . $ip);
+        $item = $this->cache->getItem('login_attempts_' . $email);
+        $expiration = $this->cache->getItem('expiration_' . $email);
 
         $expiration->set($time);
         $this->cache->save($expiration);
