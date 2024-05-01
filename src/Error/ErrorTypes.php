@@ -29,6 +29,7 @@ class ErrorTypes
     public const NOT_FOUND_LABEL_ID = 'NotFoundLabelId';
     public const USER_NOT_FOUND = 'UserNotFound';
     public const EMAIL_NOT_FOUND = 'EmailNotFound';
+    public const VALIDATION_ERROR = 'ValidationError';
     public const ACCOUNT_NOT_ACTIVE = 'AccountNotActive';
     public const UNEXPECTED_ERROR = 'UnexpectedError';
     public const INVALID_DATE_FORMAT = 'InvalidDateFormat';

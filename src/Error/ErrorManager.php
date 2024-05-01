@@ -260,6 +260,10 @@ class ErrorManager
                 $errorMessage = "Les categorie ciblée sont invalide.";
                 $codeErreur = 400;
                 break;
+            case 'ValidationError':
+                $errorMessage = "Erreur de validation de données.";
+                $codeErreur = 422;
+                break;
             case 'InvalidEmail':
                 $errorMessage = "Le format de l'email est invalide.";
                 $codeErreur = 400;
