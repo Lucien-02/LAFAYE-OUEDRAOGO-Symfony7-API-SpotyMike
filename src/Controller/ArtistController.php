@@ -187,7 +187,16 @@ class ArtistController extends AbstractController
 
             $artist_serialized = [];
             foreach ($artists as $artist) {
-                array_push($artist_serialized, $artist->serializer(false, $albumRepository));
+
+                $albumsData = [];
+                $albums = $artist->getAlbumIdAlbum();
+
+                foreach ($albums as $album) {
+                    $albumsData[] = $album->serializer(true, $albumRepository);
+                }
+                $artistData = $artist->serializer();
+                $artistData['albums'] = $albumsData;
+                array_push($artist_serialized, $artistData);
             }
 
             $totalArtists = count($this->repository->findAll());
@@ -206,7 +215,7 @@ class ArtistController extends AbstractController
 
                 $nextPageArtistsSerialized = [];
                 foreach ($nextPageArtists as $artist) {
-                    array_push($nextPageArtistsSerialized, $artist->serializer(false, $albumRepository));
+                    array_push($nextPageArtistsSerialized, $artist->serializer());
                 }
             }
 
