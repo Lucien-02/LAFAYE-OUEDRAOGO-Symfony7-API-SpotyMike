@@ -219,6 +219,18 @@ class AlbumController extends AbstractController
 
             parse_str($request->getContent(), $data);
 
+            //vérif taille de caractères des string titre et catégorie album 
+            $badData = [];
+            if (strlen($data['nom']) > 90 || strlen($data['nom']) < 1) {
+                $badData[] = 'nom';
+            }
+            if (strlen($data['categ']) > 20 || strlen($data['categ']) < 1) {
+                $badData[] = 'categ';
+            }
+            if (!empty($badData)) {
+                throw new CustomException(ErrorTypes::VALIDATION_ERROR);
+            }
+
             $this->errorManager->isValidCategory($data['categ']);
 
             if ($this->repository->findOneBy(['nom' => $data['nom']])){
