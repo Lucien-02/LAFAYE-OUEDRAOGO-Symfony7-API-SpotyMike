@@ -142,13 +142,9 @@ class Artist
         return $this;
     }
 
-    public function serializer($owner = false, AlbumRepository $albumRepository)
+    public function serializer()
     {
-        $albumsData = [];
-        $albums = $this->getAlbumIdAlbum();
-        foreach ($albums as $album) {
-            $albumsData[] = $album->serializer($owner, $albumRepository);
-        }
+
 
         return [
             "firstname" => $this->getUserIdUser()->getFirstname(),
@@ -156,7 +152,7 @@ class Artist
             "sexe" => $this->getUserIdUser()->getSexe(),
             "dateBirth" => $this->getUserIdUser()->getDateBirth()->format('d/m/Y'),
             "Artist.createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
-            "albums" => $albumsData,
+
         ];
     }
 
