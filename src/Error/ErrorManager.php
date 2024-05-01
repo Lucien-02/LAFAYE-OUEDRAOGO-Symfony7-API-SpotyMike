@@ -9,7 +9,6 @@ use DateTime;
 use Throwable;
 use CustomException;
 
-
 class ErrorManager
 {
     private CacheItemPoolInterface $cache;
@@ -33,6 +32,13 @@ class ErrorManager
         $date = \DateTime::createFromFormat($expectedFormat, $dateString);
         if ($date === false || $date->format($expectedFormat) !== $dateString) {
             throw new CustomException(ErrorTypes::INVALID_DATE_FORMAT);
+        }
+    }
+
+    public function isValidCategory(string $category)
+    {
+        if ($category !== "rap" && $category !== "r'n'b" && $category !== "gospel" && $category !== "soul" && $category !== "country" && $category !== "hip hop" && $category !== "jazz" && "Mike") {
+            throw new CustomException(ErrorTypes::INVALID_CATEGORY);
         }
     }
 
@@ -248,6 +254,10 @@ class ErrorManager
                 break;
             case 'MissingAlbumId':
                 $errorMessage = "L'id de l'album est obligatoire pour cette requête.";
+                $codeErreur = 400;
+                break;
+            case 'InvalidCategory':
+                $errorMessage = "Les categorie ciblée sont invalide.";
                 $codeErreur = 400;
                 break;
             case 'InvalidEmail':

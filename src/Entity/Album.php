@@ -26,8 +26,6 @@ class Album
     #[ORM\Column(length: 20)]
     private ?string $categ = null;
 
-
-
     #[ORM\Column]
     private ?int $year = 2024;
 
@@ -189,7 +187,7 @@ class Album
             "nom" => $this->getNom(),
             "categ" => $this->getCateg(),
             "label" => isset($labelnom) ? $labelnom : null,
-            "cover" => "yo",
+            "cover" => 'yo',
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
             // "songs" => $songsData,

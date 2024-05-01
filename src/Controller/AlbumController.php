@@ -29,7 +29,6 @@ class AlbumController extends AbstractController
     {
         $this->entityManager = $entityManager;
         $this->errorManager = $errorManager;
-
         $this->repository = $entityManager->getRepository(Album::class);
     }
 
@@ -70,6 +69,8 @@ class AlbumController extends AbstractController
             parse_str($request->getContent(), $data);
 
             $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year']);
+            
+            $this->errorManager->isValidCategory($data['categ']);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $uniqueId = uniqid();
@@ -79,11 +80,52 @@ class AlbumController extends AbstractController
             $album->setArtistUserIdUser($artist);
             $album->setNom($data['nom']);
             $album->setCateg($data['categ']);
-            //$album->setCover($data['cover']);
             $album->setYear($data['year']);
             $album->setIdAlbum($uniqueId);
             $album->setCreateAt($date);
             $album->setUpdateAt($date);
+
+            if (isset($data['cover'])) {
+                $explodeData = explode(",", $data['cover']);
+
+                if (count($explodeData) == 2) {
+                    $fileFormat = explode(';', $explodeData[0]);                
+                    $fileFormat = explode('/', $fileFormat[0]);
+                    
+                    //verif format fichier
+                    if ($fileFormat[1] !== 'png' && $fileFormat[1] !== 'jpeg') {
+                        return $this->json([
+                            'error' => true,
+                            'message' => 'Erreur sur le format du fichier qui n\'est pas pris en compte.',
+                        ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+                    }
+                    
+                    $file = base64_decode($explodeData[1]);
+                    if ($file === false) {
+                        return $this->json([
+                            'error' => true,
+                            'message' => 'Le serveur ne peut pas décoder le contenu base64 en fichier binaire.',
+                        ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+                    }
+                    
+                    //vérif si taille fichier entre 1MB et 7MB
+                    // if (strlen($file) < 1000000 || strlen($file) > 7000000) {
+                    //     return $this->json([
+                    //         'error' => true,
+                    //         'message' => 'Le fichier envoyé est trop ou pas assez volumineux. Vous devez respecter la taille entre 1Mb et 7Mb.',
+                    //     ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+                    // }
+
+                    $email = $artist->getUserIdUser()->getEmail();
+                    $fullname = $artist->getFullname();
+                    $nom_album = $album->getNom();
+    
+                    $chemin = $this->getParameter('upload_directory') . '/' . $email . '/' . $fullname . '/' . $nom_album;
+                    mkdir($chemin, 0777, true);
+                    $getCover = $chemin . '/cover_' . $album->getIdAlbum() . '.' . $fileFormat[1];
+                    file_put_contents($getCover, $file);
+                }   
+            }
 
             $this->entityManager->persist($album);
             $this->entityManager->flush();
@@ -361,7 +403,7 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
-        } catch (Exception $exception) {
-        }
+        }// catch (Exception $exception) {
+        //}
     }
 }

@@ -12,6 +12,7 @@ class ErrorTypes
     public const MISSING_PASSWORD = 'MissingPassword';
     public const MISSING_ALBUM_ID = 'MissingAlbumId';
     public const INVALID_EMAIL = 'InvalidEmail';
+    public const INVALID_CATEGORY = 'InvalidCategory';
     public const INVALID_PASSWORD_FORMAT = 'InvalidPasswordFormat';
     public const NOT_ACTIVE_USER = 'NotActiveUser';
     public const NOT_FOUND_ARTIST = 'NotFoundArtist';
