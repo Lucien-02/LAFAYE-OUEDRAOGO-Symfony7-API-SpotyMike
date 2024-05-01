@@ -68,6 +68,8 @@ class AlbumController extends AbstractController
             parse_str($request->getContent(), $data);
 
             $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year']);
+            
+            $this->errorManager->isValidCategory($data['categ']);
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $uniqueId = uniqid();
