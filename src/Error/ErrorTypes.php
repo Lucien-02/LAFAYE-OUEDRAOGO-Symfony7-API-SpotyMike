@@ -35,6 +35,7 @@ class ErrorTypes
     public const INVALID_AGE = 'InvalidAge';
     public const INVALID_PHONE_NUMBER = 'InvalidPhoneNumber';
     public const INVALID_GENDER = 'InvalidGender';
+    public const INVALID_PAGE = 'InvalidPage';
     public const NOT_UNIQUE_EMAIL = 'NotUniqueEmail';
     public const NOT_UNIQUE_TEL = 'NotUniqueTel';
     public const NOT_UNIQUE_ARTIST_NAME = 'NotUniqueArtistName';

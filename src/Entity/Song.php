@@ -6,6 +6,7 @@ use App\Repository\SongRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\AlbumRepository;
 
 #[ORM\Entity(repositoryClass: SongRepository::class)]
 class Song
@@ -175,10 +176,20 @@ class Song
 
     public function serializer()
     {
+        $featurings_serialized = [];
+        $featurings = $this->getArtistIdUser();
+        /*
+        foreach ($featurings as $featuring) {
+
+            array_push($featurings_serialized, $featuring->serializer(true, $albumRepository));
+        }
+        */
         return [
+
             "id" => $this->getId(),
             "title" => $this->getTitle(),
             "cover" => "yolerap",
+            "featuring" => $featurings_serialized,
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
         ];
     }
