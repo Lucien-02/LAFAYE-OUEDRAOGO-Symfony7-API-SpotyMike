@@ -153,6 +153,7 @@ class Artist
         return [
             "firstname" => $this->getUserIdUser()->getFirstname(),
             "lastname" => $this->getUserIdUser()->getLastname(),
+            "fullname" => $this->getFullname(),
             "sexe" => $this->getUserIdUser()->getSexe(),
             "dateBirth" => $this->getUserIdUser()->getDateBirth()->format('d/m/Y'),
             "Artist.createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),

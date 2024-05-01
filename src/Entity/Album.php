@@ -26,8 +26,6 @@ class Album
     #[ORM\Column(length: 20)]
     private ?string $categ = null;
 
-
-
     #[ORM\Column]
     private ?int $year = 2024;
 
@@ -174,6 +172,12 @@ class Album
         $songsData = [];
         $songs = $this->getSongIdSong();
         $labels = $albumRepository->findLabelsByAlbum($this);
+        
+        // define('PUBLIC_DIRECTORY_PATH', '%kernel.project_dir%/public');
+        // $publicDirectoryPath = PUBLIC_DIRECTORY_PATH;
+        // $chemin = $publicDirectoryPath . '/upload/' . $this->getArtistUserIdUser()->getUserIdUser()->getEmail() . '/' . $this->getArtistUserIdUser()->getFullname() . '/' . $this->getNom();
+        // $getCover = $chemin . '/cover_' . $this->getIdAlbum() . '.png';
+        // $content = file_get_contents($getCover);
 
         if (is_array($labels)) {
             foreach ($labels as $label) {
@@ -194,7 +198,7 @@ class Album
             "nom" => $this->getNom(),
             "categ" => $this->getCateg(),
             "label" => isset($labelnom) ? $labelnom : null,
-            "cover" => "yo",
+            "cover" => 'yo',
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
             "songs" => $songsData,
