@@ -36,6 +36,7 @@ class ErrorTypes
     public const INVALID_PHONE_NUMBER = 'InvalidPhoneNumber';
     public const INVALID_GENDER = 'InvalidGender';
     public const NOT_UNIQUE_EMAIL = 'NotUniqueEmail';
+    public const NOT_UNIQUE_ALBUM_TITLE = 'NotUniqueAlbumTitle';
     public const NOT_UNIQUE_TEL = 'NotUniqueTel';
     public const NOT_UNIQUE_ARTIST_NAME = 'NotUniqueArtistName';
     public const TOKEN_INVALID_MISSING = 'TokenInvalidMissing';

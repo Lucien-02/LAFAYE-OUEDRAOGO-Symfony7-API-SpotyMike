@@ -303,6 +303,10 @@ class ErrorManager
                 $errorMessage = 'Cet email est déjà utilisé par un autre compte.';
                 $codeErreur = 409;
                 break;
+            case 'NotUniqueAlbumTitle':
+                $errorMessage = 'Ce titre est déjà pris. Veuillez en choisir un autre.';
+                $codeErreur = 409;
+                break;
             case 'NotUniqueTel':
                 $errorMessage = 'Conflit de données. Le numéro de téléphone est déjà utilisé par un autre utilisateur.';
                 $codeErreur = 409;
