@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Album;
+use App\Entity\User;
 use App\Repository\AlbumRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -288,18 +289,40 @@ class AlbumController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
+            $email =  $decodedtoken['username'];
+            $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
             if (empty($id)) {
                 return $this->errorManager->generateError(ErrorTypes::MISSING_ALBUM_ID);
             }
 
             $album = $this->repository->find($id);
+            if (!empty($album)) {
 
-            $this->errorManager->checkNotFoundAlbumId($album);
+                $songsData = [];
+                $songs = $album->getSongIdSong();
+                $this->errorManager->checkNotFoundAlbumId($album);
+                $albumfound = $album->serializer();
+                $owner = false;
+                if ($album->getArtistUserIdUser() == $request_user->getArtist()) {
+                    $owner = true;
+                }
+                foreach ($songs as $song) {
+                    if ($owner == true || $song->isVisibility() == true) {
+                        $songsData[] = $song->serializer();
+                    }
+                }
 
+                $albumfound['songs'] = $songsData;
+            } else {
+                return new JsonResponse([
+                    "error" => true,
+                    "message" => "Aucun album trouvé."
+                ], 200);
+            }
             return new JsonResponse([
                 "error" => false,
-                "album" => $album->serializer(false, $albumRepository)
+                "album" => $albumfound
             ], 200);
 
             // Gestion des erreurs inattendues
@@ -322,7 +345,7 @@ class AlbumController extends AbstractController
             $albumsPerPage = 5;
             $numPage = $_GET["currentPage"];
             if ($numPage <= 0) {
-                throw new CustomException(ErrorTypes::NOT_FOUND_ARTIST);
+                throw new CustomException(ErrorTypes::INVALID_PAGE);
             }
             // Récupération page demandée
             $page = $request->query->getInt('currentPage', $numPage);

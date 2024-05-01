@@ -43,9 +43,15 @@ class UserController extends AbstractController
             parse_str($request->getContent(), $data);
 
             $usersPerPage = 5;
-            $numPage = $_GET["currentPage"];
+            if (isset($_GET["currentPage"])) {
+
+
+                $numPage = $_GET["currentPage"];
+            } else {
+                throw new CustomException(ErrorTypes::MISSING_ATTRIBUTES);
+            }
             if ($numPage <= 0) {
-                throw new CustomException(ErrorTypes::NOT_FOUND_ARTIST);
+                throw new CustomException(ErrorTypes::INVALID_PAGE);
             }
             // Récupération page demandée
             $page = $request->query->getInt('currentPage', $numPage);
@@ -56,9 +62,15 @@ class UserController extends AbstractController
 
             $this->errorManager->checkNotFoundUser($users);
 
+
             $user_serialized = [];
+
             foreach ($users as $user) {
-                array_push($user_serialized, $user->serializer());
+                $userfound = $user->serializer();
+                $artist = $user->getArtist() ? $user->getArtist()->serializer() : [];
+
+                $userfound = array_slice($userfound, 0, 5, true) + ['artist' => $artist] + array_slice($userfound, 5, null, true);
+                array_push($user_serialized, $userfound);
             }
 
             $totalUsers = count($this->repository->findAll());
@@ -122,7 +134,12 @@ class UserController extends AbstractController
 
             $this->errorManager->checkNotFoundUserId($user);
 
-            return $this->json($user->serializer());
+            $userfound = $user->serializer();
+            $artist = $user->getArtist() ? $user->getArtist()->serializer() : [];
+
+            $userfound = array_slice($userfound, 0, 5, true) + ['artist' => $artist] + array_slice($userfound, 5, null, true);
+
+            return $this->json($userfound);
 
             // Gestion des erreurs inattendues
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);

@@ -70,13 +70,17 @@ class LoginController extends  AbstractController
             if (!$user->getActive()) {
                 return $errorManager->generateError(ErrorTypes::NOT_ACTIVE_USER);
             }
+            $userfound = $user->serializer();
+            $artist = $user->getArtist() ? $user->getArtist()->serializer() : [];
+
+            $userfound = array_slice($userfound, 0, 3, true) + ['artist' => $artist] + array_slice($userfound, 3, null, true);
 
             if ($passwordHash->isPasswordValid($user, $password)) {
                 $token = $JWTManager->create($user);
                 return new JsonResponse([
                     'error' => false,
                     'message' => "L'utilisateur a été authentifié avec succès",
-                    'user' => $user->serializer($albumRepository),
+                    'user' => $userfound,
                     'token' => $token,
                 ], 200);
             }

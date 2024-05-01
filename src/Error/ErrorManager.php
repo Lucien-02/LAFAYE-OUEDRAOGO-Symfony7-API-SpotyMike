@@ -162,7 +162,7 @@ class ErrorManager
 
     public  function isValidEmail(string $email)
     {
-        if (!preg_match('/^[a-zA-Z0-9.%+-]+@[^\s@]+[a-zA-Z0-9.—-]+[\w.-]+.[a-zA-Z]{2,}$/', $email)) {
+        if (!preg_match('/^[a-zA-Z0-9.%+-]+[\w.-]+@[^\s@]+[a-zA-Z0-9.—-]+[\w.-]+.[a-zA-Z]{2,}$/', $email)) {
             throw new CustomException(ErrorTypes::INVALID_EMAIL);
         }
     }
@@ -382,6 +382,10 @@ class ErrorManager
             case 'InvalidDataLength':
                 $errorMessage = 'Erreur de validation des données.';
                 $codeErreur = 422;
+                break;
+            case 'InvalidPage':
+                $errorMessage = "Le paramètre de pagination est invalide. Veuillez fournir un numéro de page valide.";
+                $codeErreur = 400;
                 break;
 
             default:
