@@ -169,25 +169,20 @@ class Album
         return $this;
     }
 
-    public function serializer($owner = false, AlbumRepository $albumRepository)
+    public function serializer()
     {
-        $songsData = [];
-        $songs = $this->getSongIdSong();
-        $labels = $albumRepository->findLabelsByAlbum($this);
 
+        //$labels = $albumRepository->findLabelsByAlbum($this);
+        /*
         if (is_array($labels)) {
             foreach ($labels as $label) {
                 $labelId = $label->getLabelId();
                 $labelnom = $labelId->getNom();
             }
-        }
+        }*/
         //dd($labelnom);
 
-        foreach ($songs as $song) {
-            if ($owner == true || $song->isVisibility() == true) {
-                $songsData[] = $song->serializer();
-            }
-        }
+
 
         return [
             "id" => $this->getId(),
@@ -197,7 +192,7 @@ class Album
             "cover" => "yo",
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
-            "songs" => $songsData,
+            // "songs" => $songsData,
         ];
     }
 }
