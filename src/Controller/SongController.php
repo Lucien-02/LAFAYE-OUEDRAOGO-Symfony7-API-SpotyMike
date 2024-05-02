@@ -189,12 +189,12 @@ class SongController extends AbstractController
                     }
                     
                     //vérif si taille fichier entre 1MB et 7MB
-                    // if (strlen($file) < 1000000 || strlen($file) > 7000000) {
-                    //     return $this->json([
-                    //         'error' => true,
-                    //         'message' => 'Le fichier envoyé est trop ou pas assez volumineux. Vous devez respecter la taille entre 1Mb et 7Mb.',
-                    //     ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
-                    // }
+                    if (strlen($file) < 1000000 || strlen($file) > 7000000) {
+                        return $this->json([
+                            'error' => true,
+                            'message' => 'Le fichier envoyé est trop ou pas assez volumineux. Vous devez respecter la taille entre 1Mb et 7Mb.',
+                        ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+                    }
 
                     $email = $artist->getUserIdUser()->getEmail();
                     $fullname = $artist->getFullname();

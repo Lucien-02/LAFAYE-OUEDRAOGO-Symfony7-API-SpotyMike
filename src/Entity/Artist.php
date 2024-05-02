@@ -44,6 +44,8 @@ class Artist
 
     public $getAvatar;
 
+    public $getCover;
+
     public function __construct()
     {
         $this->Followers = new ArrayCollection();
@@ -119,6 +121,11 @@ class Artist
         return $this->getAvatar;
     }
 
+    public function getCover(): ?string
+    {
+        return $this->getCover;
+    }
+
     /**
      * @return Collection<int, Album>
      */
@@ -156,9 +163,9 @@ class Artist
         return [
             "firstname" => $this->getUserIdUser()->getFirstname(),
             "lastname" => $this->getUserIdUser()->getLastname(),
-            "avatar" => "",
+            "avatar" => $this->getAvatar(),
             "follower" => $this->getFollowers()->count(),
-            "cover" => "",
+            "cover" => $this->getCover(),
             "fullname" => $this->getFullname(),
             "avatar" => $this->getAvatar(),
             "sexe" => $this->getUserIdUser()->getSexe(),
