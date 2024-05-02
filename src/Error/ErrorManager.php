@@ -260,6 +260,10 @@ class ErrorManager
                 $errorMessage = "Les categorie ciblée sont invalide.";
                 $codeErreur = 400;
                 break;
+            case 'ValidationError':
+                $errorMessage = "Erreur de validation de données.";
+                $codeErreur = 422;
+                break;
             case 'InvalidEmail':
                 $errorMessage = "Le format de l'email est invalide.";
                 $codeErreur = 400;
@@ -301,6 +305,10 @@ class ErrorManager
                 break;
             case 'NotUniqueEmail':
                 $errorMessage = 'Cet email est déjà utilisé par un autre compte.';
+                $codeErreur = 409;
+                break;
+            case 'NotUniqueAlbumTitle':
+                $errorMessage = 'Ce titre est déjà pris. Veuillez en choisir un autre.';
                 $codeErreur = 409;
                 break;
             case 'NotUniqueTel':

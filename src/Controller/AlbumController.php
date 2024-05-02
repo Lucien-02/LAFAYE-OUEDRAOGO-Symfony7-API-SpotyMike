@@ -70,7 +70,25 @@ class AlbumController extends AbstractController
 
             $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year']);
 
+            
+            //vérif taille de caractères des string titre et catégorie album 
+            $badData = [];
+            if (strlen($data['nom']) > 90 || strlen($data['nom']) < 1) {
+                $badData[] = 'nom';
+            }
+            if (strlen($data['categ']) > 20 || strlen($data['categ']) < 1) {
+                $badData[] = 'categ';
+            }
+            if (!empty($badData)) {
+                throw new CustomException(ErrorTypes::VALIDATION_ERROR);
+            }
+            
+
             $this->errorManager->isValidCategory($data['categ']);
+
+            if ($this->repository->findOneBy(['nom' => $data['nom']])){
+                throw new CustomException(ErrorTypes::NOT_UNIQUE_ALBUM_TITLE);
+            }
 
             $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $uniqueId = uniqid();
@@ -203,6 +221,24 @@ class AlbumController extends AbstractController
 
             parse_str($request->getContent(), $data);
 
+            //vérif taille de caractères des string titre et catégorie album 
+            $badData = [];
+            if (strlen($data['nom']) > 90 || strlen($data['nom']) < 1) {
+                $badData[] = 'nom';
+            }
+            if (strlen($data['categ']) > 20 || strlen($data['categ']) < 1) {
+                $badData[] = 'categ';
+            }
+            if (!empty($badData)) {
+                throw new CustomException(ErrorTypes::VALIDATION_ERROR);
+            }
+
+            $this->errorManager->isValidCategory($data['categ']);
+
+            if ($this->repository->findOneBy(['nom' => $data['nom']])){
+                throw new CustomException(ErrorTypes::NOT_UNIQUE_ALBUM_TITLE);
+            }
+
             if (isset($data['nom'])) {
                 $album->setNom($data['nom']);
             }
@@ -241,11 +277,11 @@ class AlbumController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
+            
+            $this->errorManager->isValidCategory($_GET['categ']);
 
-            parse_str($request->getContent(), $data);
-
-            if ((isset($data['label']) || isset($data['year']) || isset($data['featuring']) || isset($data['category']) || isset($data['limit']))) {
-                $albums = $this->repository->findBy($data);
+            if ((isset($_GET['label']) || isset($_GET['year']) || isset($_GET['featuring']) || isset($_GET['category']) || isset($_GET['limit']))) {
+                $albums = $this->repository->findBy($_GET);
                 $this->errorManager->checkNotFoundAlbum($albums);
 
                 $album_serialized = [];

@@ -209,7 +209,7 @@ class UserController extends AbstractController
             }
 
             //vérif email unique
-            if ($this->repository->findOneByEmail($email)) {
+            if ($this->repository->findOneBy(['email' => $email])) {
                 return $this->errorManager->generateError(ErrorTypes::NOT_UNIQUE_EMAIL);
             }
 

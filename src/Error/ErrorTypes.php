@@ -29,6 +29,7 @@ class ErrorTypes
     public const NOT_FOUND_LABEL_ID = 'NotFoundLabelId';
     public const USER_NOT_FOUND = 'UserNotFound';
     public const EMAIL_NOT_FOUND = 'EmailNotFound';
+    public const VALIDATION_ERROR = 'ValidationError';
     public const ACCOUNT_NOT_ACTIVE = 'AccountNotActive';
     public const UNEXPECTED_ERROR = 'UnexpectedError';
     public const INVALID_DATE_FORMAT = 'InvalidDateFormat';
@@ -37,6 +38,7 @@ class ErrorTypes
     public const INVALID_GENDER = 'InvalidGender';
     public const INVALID_PAGE = 'InvalidPage';
     public const NOT_UNIQUE_EMAIL = 'NotUniqueEmail';
+    public const NOT_UNIQUE_ALBUM_TITLE = 'NotUniqueAlbumTitle';
     public const NOT_UNIQUE_TEL = 'NotUniqueTel';
     public const NOT_UNIQUE_ARTIST_NAME = 'NotUniqueArtistName';
     public const TOKEN_INVALID_MISSING = 'TokenInvalidMissing';
