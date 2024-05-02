@@ -73,7 +73,7 @@ class LoginController extends  AbstractController
             $userfound = $user->serializer();
             $artist = $user->getArtist() ? $user->getArtist()->serializer() : [];
 
-            $userfound = array_slice($userfound, 0, 3, true) + ['artist' => $artist] + array_slice($userfound, 3, null, true);
+            $userfound['artist'] = $artist;
 
             if ($passwordHash->isPasswordValid($user, $password)) {
                 $token = $JWTManager->create($user);

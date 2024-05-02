@@ -69,7 +69,7 @@ class UserController extends AbstractController
                 $userfound = $user->serializer();
                 $artist = $user->getArtist() ? $user->getArtist()->serializer() : [];
 
-                $userfound = array_slice($userfound, 0, 5, true) + ['artist' => $artist] + array_slice($userfound, 5, null, true);
+                $userfound['artist'] = $artist;
                 array_push($user_serialized, $userfound);
             }
 
@@ -137,7 +137,7 @@ class UserController extends AbstractController
             $userfound = $user->serializer();
             $artist = $user->getArtist() ? $user->getArtist()->serializer() : [];
 
-            $userfound = array_slice($userfound, 0, 5, true) + ['artist' => $artist] + array_slice($userfound, 5, null, true);
+            $userfound['artist'] = $artist;
 
             return $this->json($userfound);
 
@@ -233,9 +233,9 @@ class UserController extends AbstractController
                 $explodeData = explode(",", $data['avatar']);
 
                 if (count($explodeData) == 2) {
-                    $fileFormat = explode(';', $explodeData[0]);                
+                    $fileFormat = explode(';', $explodeData[0]);
                     $fileFormat = explode('/', $fileFormat[0]);
-                    
+
                     //verif format fichier
                     if ($fileFormat[1] !== 'png' && $fileFormat[1] !== 'jpeg') {
                         return $this->json([
@@ -243,7 +243,7 @@ class UserController extends AbstractController
                             'message' => 'Erreur sur le format du fichier qui n\'est pas pris en compte.',
                         ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
                     }
-                    
+
                     $file = base64_decode($explodeData[1]);
                     if ($file === false) {
                         return $this->json([
@@ -251,7 +251,7 @@ class UserController extends AbstractController
                             'message' => 'Le serveur ne peut pas décoder le contenu base64 en fichier binaire.',
                         ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
                     }
-                    
+
                     //vérif si taille fichier entre 1MB et 7MB
                     // if (strlen($file) < 1000000 || strlen($file) > 7000000) {
                     //     return $this->json([
@@ -259,7 +259,7 @@ class UserController extends AbstractController
                     //         'message' => 'Le fichier envoyé est trop ou pas assez volumineux. Vous devez respecter la taille entre 1Mb et 7Mb.',
                     //     ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
                     // }
-    
+
                     $chemin = $this->getParameter('upload_directory') . '/' . $user->getEmail();
                     mkdir($chemin);
                     $this->getAvatar = ($chemin . '/avatar_' . $user->getIdUser() . '.' . $fileFormat[1]);
