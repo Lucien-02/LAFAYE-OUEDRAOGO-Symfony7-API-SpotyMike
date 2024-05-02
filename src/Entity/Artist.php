@@ -42,6 +42,10 @@ class Artist
     #[ORM\OneToMany(targetEntity: LabelHasArtist::class, mappedBy: 'artist_id')]
     private Collection $ArtisthasLabels;
 
+    public $getAvatar;
+
+    public $getCover;
+
     public function __construct()
     {
         $this->Followers = new ArrayCollection();
@@ -112,6 +116,16 @@ class Artist
         return $this;
     }
 
+    public function getAvatar(): ?string
+    {
+        return $this->getAvatar;
+    }
+
+    public function getCover(): ?string
+    {
+        return $this->getCover;
+    }
+
     /**
      * @return Collection<int, Album>
      */
@@ -149,10 +163,11 @@ class Artist
         return [
             "firstname" => $this->getUserIdUser()->getFirstname(),
             "lastname" => $this->getUserIdUser()->getLastname(),
-            "avatar" => "",
+            "avatar" => $this->getAvatar(),
             "follower" => $this->getFollowers()->count(),
-            "cover" => "",
+            "cover" => $this->getCover(),
             "fullname" => $this->getFullname(),
+            "avatar" => $this->getAvatar(),
             "sexe" => $this->getUserIdUser()->getSexe(),
             "dateBirth" => $this->getUserIdUser()->getDateBirth()->format('d/m/Y'),
             "Artist.createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),

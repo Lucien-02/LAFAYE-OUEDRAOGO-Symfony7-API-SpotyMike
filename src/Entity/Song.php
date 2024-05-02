@@ -25,7 +25,6 @@ class Song
     #[ORM\Column(length: 125)]
     private ?string $url = null;
 
-
     #[ORM\Column]
     private ?bool $visibility = true;
 
@@ -40,6 +39,8 @@ class Song
 
     #[ORM\ManyToOne(inversedBy: 'song_idSong', cascade: ['persist', 'remove'])]
     private ?Album $album = null;
+
+    public $getCover;
 
     public function __construct()
     {
@@ -174,15 +175,19 @@ class Song
         return $this;
     }
 
+    public function getCover(): ?string
+    {
+        return $this->getCover;
+    }
+
     public function serializer()
     {
 
 
         return [
-
             "id" => $this->getId(),
             "title" => $this->getTitle(),
-            "cover" => "yolerap",
+            "cover" => $this->getCover(),
             //"featuring" => $featurings_serialized,
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
         ];
