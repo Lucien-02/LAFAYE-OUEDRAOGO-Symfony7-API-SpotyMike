@@ -198,12 +198,13 @@ class SongController extends AbstractController
 
                     $email = $artist->getUserIdUser()->getEmail();
                     $fullname = $artist->getFullname();
-                    $nom_album = $album->getNom();
+                    $song_title = $song->getTitle();
     
-                    $chemin = $this->getParameter('upload_directory') . '/' . $email . '/' . $fullname . '/' . $nom_album;
+                    $chemin = $this->getParameter('upload_directory') . '/' . $email . '/' . $fullname . '/' . $song_title;
                     mkdir($chemin, 0777, true);
-                    $getCover = $chemin . '/cover_' . $album->getIdAlbum() . '.' . $fileFormat[1];
+                    $getCover = $chemin . '/cover_' . $song->getIdSong() . '.' . $fileFormat[1];
                     file_put_contents($getCover, $file);
+                    $song->getCover = $getCover;
                 }
             }
 

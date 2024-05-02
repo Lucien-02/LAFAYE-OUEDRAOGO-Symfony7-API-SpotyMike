@@ -41,6 +41,8 @@ class Album
     #[ORM\OneToMany(targetEntity: Song::class, mappedBy: 'album', cascade: ['persist', 'remove'])]
     private Collection $song_idSong;
 
+    public $getCover;
+
     public function __construct()
     {
         $this->song_idSong = new ArrayCollection();
@@ -137,6 +139,11 @@ class Album
         return $this;
     }
 
+    public function getCover(): ?string
+    {
+        return $this->getCover;
+    }
+
     /**
      * @return Collection<int, Song>
      */
@@ -187,7 +194,7 @@ class Album
             "nom" => $this->getNom(),
             "categ" => $this->getCateg(),
             "label" => isset($labelnom) ? $labelnom : null,
-            "cover" => 'yo',
+            "cover" => $this->getCover(),
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
             // "songs" => $songsData,

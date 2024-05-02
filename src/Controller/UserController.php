@@ -17,7 +17,6 @@ use Exception;
 use CustomException;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 
 class UserController extends AbstractController
 {
@@ -229,44 +228,6 @@ class UserController extends AbstractController
 
             $this->entityManager->flush();
 
-            if (isset($data['avatar'])) {
-                $explodeData = explode(",", $data['avatar']);
-
-                if (count($explodeData) == 2) {
-                    $fileFormat = explode(';', $explodeData[0]);                
-                    $fileFormat = explode('/', $fileFormat[0]);
-                    
-                    //verif format fichier
-                    if ($fileFormat[1] !== 'png' && $fileFormat[1] !== 'jpeg') {
-                        return $this->json([
-                            'error' => true,
-                            'message' => 'Erreur sur le format du fichier qui n\'est pas pris en compte.',
-                        ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
-                    }
-                    
-                    $file = base64_decode($explodeData[1]);
-                    if ($file === false) {
-                        return $this->json([
-                            'error' => true,
-                            'message' => 'Le serveur ne peut pas décoder le contenu base64 en fichier binaire.',
-                        ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
-                    }
-                    
-                    //vérif si taille fichier entre 1MB et 7MB
-                    // if (strlen($file) < 1000000 || strlen($file) > 7000000) {
-                    //     return $this->json([
-                    //         'error' => true,
-                    //         'message' => 'Le fichier envoyé est trop ou pas assez volumineux. Vous devez respecter la taille entre 1Mb et 7Mb.',
-                    //     ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
-                    // }
-    
-                    $chemin = $this->getParameter('upload_directory') . '/' . $user->getEmail();
-                    mkdir($chemin);
-                    $this->getAvatar = ($chemin . '/avatar_' . $user->getIdUser() . '.' . $fileFormat[1]);
-                    file_put_contents($this->getAvatar, $file);
-                }
-            }
-
             return new JsonResponse([
                 'error' => false,
                 'message' => "L'utilisateur a bien été créé avec succès.",
@@ -280,7 +241,6 @@ class UserController extends AbstractController
         } catch (Exception $exception) {
         }
     }
-
 
     #[Route('/user', name: 'app_user_post', methods: 'POST')]
     public function postUser(TokenInterface $token, Request $request, JWTTokenManagerInterface $JWTManager, UserPasswordHasherInterface $passwordHash): JsonResponse
