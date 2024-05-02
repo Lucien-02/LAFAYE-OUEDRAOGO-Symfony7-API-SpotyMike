@@ -132,7 +132,6 @@ class LoginController extends  AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $errorManager->generateError($exception->getMessage(), $exception->getCode());
-        } catch (Exception $exception) {
         }
     }
     #[Route('/reset-password/{token}', name: 'app_reset-password', methods: ['GET'])]
@@ -165,7 +164,6 @@ class LoginController extends  AbstractController
                 } else {
                     return $errorManager->generateError(ErrorTypes::TOKEN_INVALID_MISSING);
                 }
-            } catch (Exception $exception) {
             }
 
             if (!isset($_GET["password"])) {
