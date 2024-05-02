@@ -149,6 +149,9 @@ class Artist
         return [
             "firstname" => $this->getUserIdUser()->getFirstname(),
             "lastname" => $this->getUserIdUser()->getLastname(),
+            "avatar" => "",
+            "follower" => $this->getFollowers()->count(),
+            "cover" => "",
             "fullname" => $this->getFullname(),
             "sexe" => $this->getUserIdUser()->getSexe(),
             "dateBirth" => $this->getUserIdUser()->getDateBirth()->format('d/m/Y'),
