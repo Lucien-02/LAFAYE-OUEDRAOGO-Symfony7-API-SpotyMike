@@ -70,7 +70,7 @@ class AlbumController extends AbstractController
 
             $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year']);
 
-            
+
             //vérif taille de caractères des string titre et catégorie album 
             $badData = [];
             if (strlen($data['nom']) > 90 || strlen($data['nom']) < 1) {
@@ -82,11 +82,11 @@ class AlbumController extends AbstractController
             if (!empty($badData)) {
                 throw new CustomException(ErrorTypes::VALIDATION_ERROR);
             }
-            
+
 
             $this->errorManager->isValidCategory($data['categ']);
 
-            if ($this->repository->findOneBy(['nom' => $data['nom']])){
+            if ($this->repository->findOneBy(['nom' => $data['nom']])) {
                 throw new CustomException(ErrorTypes::NOT_UNIQUE_ALBUM_TITLE);
             }
 
@@ -236,7 +236,7 @@ class AlbumController extends AbstractController
 
             $this->errorManager->isValidCategory($data['categ']);
 
-            if ($this->repository->findOneBy(['nom' => $data['nom']])){
+            if ($this->repository->findOneBy(['nom' => $data['nom']])) {
                 throw new CustomException(ErrorTypes::NOT_UNIQUE_ALBUM_TITLE);
             }
 
@@ -278,7 +278,7 @@ class AlbumController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
-            
+
             $this->errorManager->isValidCategory($_GET['categ']);
 
             if ((isset($_GET['label']) || isset($_GET['year']) || isset($_GET['featuring']) || isset($_GET['category']) || isset($_GET['limit']))) {
@@ -503,7 +503,11 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
-        } // catch (Exception $exception) {
-        //}
+        } catch (Exception $exception) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => $exception->getMessage()
+            ], $exception->getCode());
+        }
     }
 }
