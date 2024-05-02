@@ -68,7 +68,7 @@ class UserController extends AbstractController
                 $userfound = $user->serializer();
                 $artist = $user->getArtist() ? $user->getArtist()->serializer() : [];
 
-                $userfound = array_slice($userfound, 0, 5, true) + ['artist' => $artist] + array_slice($userfound, 5, null, true);
+                $userfound['artist'] = $artist;
                 array_push($user_serialized, $userfound);
             }
 
@@ -136,7 +136,7 @@ class UserController extends AbstractController
             $userfound = $user->serializer();
             $artist = $user->getArtist() ? $user->getArtist()->serializer() : [];
 
-            $userfound = array_slice($userfound, 0, 5, true) + ['artist' => $artist] + array_slice($userfound, 5, null, true);
+            $userfound['artist'] = $artist;
 
             return $this->json($userfound);
 

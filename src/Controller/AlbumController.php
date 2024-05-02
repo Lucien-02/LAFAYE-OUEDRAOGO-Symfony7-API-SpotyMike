@@ -69,6 +69,7 @@ class AlbumController extends AbstractController
             parse_str($request->getContent(), $data);
 
             $this->errorManager->checkRequiredAttributes($data, ['nom', 'categ', 'cover', 'year']);
+
             
             //vérif taille de caractères des string titre et catégorie album 
             $badData = [];
@@ -82,6 +83,7 @@ class AlbumController extends AbstractController
                 throw new CustomException(ErrorTypes::VALIDATION_ERROR);
             }
             
+
             $this->errorManager->isValidCategory($data['categ']);
 
             if ($this->repository->findOneBy(['nom' => $data['nom']])){
@@ -105,9 +107,9 @@ class AlbumController extends AbstractController
                 $explodeData = explode(",", $data['cover']);
 
                 if (count($explodeData) == 2) {
-                    $fileFormat = explode(';', $explodeData[0]);                
+                    $fileFormat = explode(';', $explodeData[0]);
                     $fileFormat = explode('/', $fileFormat[0]);
-                    
+
                     //verif format fichier
                     if ($fileFormat[1] !== 'png' && $fileFormat[1] !== 'jpeg') {
                         return $this->json([
@@ -115,7 +117,7 @@ class AlbumController extends AbstractController
                             'message' => 'Erreur sur le format du fichier qui n\'est pas pris en compte.',
                         ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
                     }
-                    
+
                     $file = base64_decode($explodeData[1]);
                     if ($file === false) {
                         return $this->json([
@@ -123,7 +125,7 @@ class AlbumController extends AbstractController
                             'message' => 'Le serveur ne peut pas décoder le contenu base64 en fichier binaire.',
                         ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
                     }
-                    
+
                     //vérif si taille fichier entre 1MB et 7MB
                     // if (strlen($file) < 1000000 || strlen($file) > 7000000) {
                     //     return $this->json([
@@ -135,7 +137,7 @@ class AlbumController extends AbstractController
                     $email = $artist->getUserIdUser()->getEmail();
                     $fullname = $artist->getFullname();
                     $nom_album = $album->getNom();
-    
+
                     $chemin = $this->getParameter('upload_directory') . '/' . $email . '/' . $fullname . '/' . $nom_album;
                     mkdir($chemin, 0777, true);
                     $getCover = $chemin . '/cover_' . $album->getIdAlbum() . '.' . $fileFormat[1];
@@ -334,9 +336,32 @@ class AlbumController extends AbstractController
                 }
                 foreach ($songs as $song) {
                     if ($owner == true || $song->isVisibility() == true) {
-                        $songsData[] = $song->serializer();
+                        //Featuring dans song
+                        $featurings_serialized = [];
+                        $featurings = $song->getArtistIdUser();
+
+                        foreach ($featurings as $featuring) {
+
+                            array_push($featurings_serialized, $featuring->serializer());
+                        }
+                        $songsData = $song->serializer();
+                        $songsData['featuring'] = $featurings_serialized;
                     }
                 }
+                //Gestion Label
+                $labels = $this->repository->findLabelsByAlbum($album);
+                $labelnom = null;
+                if (is_array($labels)) {
+                    foreach ($labels as $label) {
+                        $labelId = $label->getLabelId();
+                        $labelnom = $labelId->getNom();
+                    }
+                }
+                //Get artist
+                $artist = $album->getArtistUserIdUser() ? $album->getArtistUserIdUser()->serializer() : [];
+
+                $albumfound['artist'] = $artist;
+                $albumfound['label'] = $labelnom;
 
                 $albumfound['songs'] = $songsData;
             } else {
@@ -359,11 +384,13 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/albums', name: 'app_albums_get', methods: ['GET'])]
-    public function get_all_albums(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager, AlbumRepository $albumRepository): JsonResponse
+    public function get_all_albums(Request $request, TokenInterface $token, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
+            $email =  $decodedtoken['username'];
+            $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
             parse_str($request->getContent(), $data);
 
@@ -383,7 +410,45 @@ class AlbumController extends AbstractController
 
             $album_serialized = [];
             foreach ($albums as $album) {
-                array_push($album_serialized, $album->serializer(false, $albumRepository));
+                $songsData = [];
+                $songs = $album->getSongIdSong();
+                $this->errorManager->checkNotFoundAlbumId($album);
+                $albumfound = $album->serializer();
+                $owner = false;
+                if ($album->getArtistUserIdUser() == $request_user->getArtist()) {
+                    $owner = true;
+                }
+                foreach ($songs as $song) {
+                    if ($owner == true || $song->isVisibility() == true) {
+                        //Featuring dans song
+                        $featurings_serialized = [];
+                        $featurings = $song->getArtistIdUser();
+
+                        foreach ($featurings as $featuring) {
+
+                            array_push($featurings_serialized, $featuring->serializer());
+                        }
+                        $songsData = $song->serializer();
+                        $songsData['featuring'] = $featurings_serialized;
+                    }
+                }
+
+                $albumfound['songs'] = $songsData;
+                //Get Label
+                $labels = $this->repository->findLabelsByAlbum($album);
+                $labelnom = null;
+                if (is_array($labels)) {
+                    foreach ($labels as $label) {
+                        $labelId = $label->getLabelId();
+                        $labelnom = $labelId->getNom();
+                    }
+                }
+                //Get artist
+                $artist = $album->getArtistUserIdUser() ? $album->getArtistUserIdUser()->serializer() : [];
+
+                $albumfound['artist'] = $artist;
+                $albumfound['label'] = $labelnom;
+                array_push($album_serialized, $albumfound);
             }
 
             $totalAlbums = count($this->repository->findAll());
@@ -402,7 +467,7 @@ class AlbumController extends AbstractController
 
                 $nextPageAlbumsSerialized = [];
                 foreach ($nextPageAlbums as $album) {
-                    array_push($nextPageAlbumsSerialized, $album->serializer(false, $albumRepository));
+                    array_push($nextPageAlbumsSerialized, $album->serializer());
                 }
             }
 
@@ -415,7 +480,7 @@ class AlbumController extends AbstractController
                 $currentPage = $nextPage;
                 $id = $album->getId();
 
-                $serializedAlbums[] = $album->serializer(false, $albumRepository);
+                $serializedAlbums[] = $album->serializer();
             }
 
             $response = [
@@ -438,7 +503,7 @@ class AlbumController extends AbstractController
             throw new CustomException(ErrorTypes::UNEXPECTED_ERROR);
         } catch (CustomException $exception) {
             return $this->errorManager->generateError($exception->getMessage(), $exception->getCode());
-        }// catch (Exception $exception) {
+        } // catch (Exception $exception) {
         //}
     }
 }

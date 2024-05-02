@@ -204,6 +204,8 @@ class ArtistController extends AbstractController
         try {
             $decodedtoken = $JWTManager->decode($token);
             $this->errorManager->TokenNotReset($decodedtoken);
+            $email =  $decodedtoken['username'];
+            $request_user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
             parse_str($request->getContent(), $data);
 
@@ -229,7 +231,42 @@ class ArtistController extends AbstractController
                 $albums = $artist->getAlbumIdAlbum();
 
                 foreach ($albums as $album) {
-                    $albumsData[] = $album->serializer(true, $albumRepository);
+                    $songsData = [];
+                    $songs = $album->getSongIdSong();
+                    $this->errorManager->checkNotFoundAlbumId($album);
+                    $albumfound = $album->serializer();
+                    $owner = false;
+                    if ($album->getArtistUserIdUser() == $request_user->getArtist()) {
+                        $owner = true;
+                    }
+                    foreach ($songs as $song) {
+                        if ($owner == true || $song->isVisibility() == true) {
+                            //Featuring dans song
+                            $featurings_serialized = [];
+                            $featurings = $song->getArtistIdUser();
+
+                            foreach ($featurings as $featuring) {
+
+                                array_push($featurings_serialized, $featuring->serializer());
+                            }
+                            $songsData = $song->serializer();
+                            $songsData['featuring'] = $featurings_serialized;
+                        }
+                    }
+
+                    $albumsData = $album->serializer();
+
+                    $albumsData['songs'] = $songsData;
+                    //Gestion Label
+                    $labels = $albumRepository->findLabelsByAlbum($album);
+                    $labelnom = null;
+                    if (is_array($labels)) {
+                        foreach ($labels as $label) {
+                            $labelId = $label->getLabelId();
+                            $labelnom = $labelId->getNom();
+                        }
+                    }
+                    $albumsData['label'] = $labelnom;
                 }
                 $artistData = $artist->serializer();
                 $artistData['albums'] = $albumsData;
