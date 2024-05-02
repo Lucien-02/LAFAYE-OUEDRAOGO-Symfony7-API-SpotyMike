@@ -142,7 +142,8 @@ class AlbumController extends AbstractController
                     mkdir($chemin, 0777, true);
                     $getCover = $chemin . '/cover_' . $album->getIdAlbum() . '.' . $fileFormat[1];
                     file_put_contents($getCover, $file);
-                }
+                    $album->getCover = $getCover;
+                }   
             }
 
             $this->entityManager->persist($album);
