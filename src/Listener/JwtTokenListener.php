@@ -4,7 +4,8 @@ namespace App\Listener;
 
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTExpiredEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTInvalidEvent;
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTNotFoundEvent;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class JwtTokenListener
@@ -17,7 +18,7 @@ class JwtTokenListener
 
         // Définir votre propre réponse
         $response = new JsonResponse([
-            'code' => 401,
+            'error' => 'true',
             'message' => 'Votre session a expiré. Veuillez vous reconnecter.'
         ], 401);
 
@@ -31,20 +32,27 @@ class JwtTokenListener
 
         // Définir votre propre réponse pour le token invalide
         $response = new JsonResponse([
-            'code' => 401,
+            'error' => 'true',
             'message' => 'Token invalide. Veuillez vous reconnecter avec un token valide.'
         ], 401);
 
         $event->setResponse($response);
     }
-    public function onJwtNotFound(JWTNotFoundEvent $event)
+    public function onKernelException(ExceptionEvent $event)
     {
-        // Définir votre propre réponse pour le token manquant
-        $response = new JsonResponse([
-            'code' => 401,
-            'message' => 'Token manquant. Veuillez fournir un token valide pour accéder à cette ressource.'
-        ], 401);
+        // Récupérer l'exception de l'événement
+        $exception = $event->getThrowable();
 
-        $event->setResponse($response);
+        // Vérifier si c'est une exception HTTP
+        if ($exception instanceof HttpExceptionInterface) {
+            // Renvoyer une réponse JSON avec le message d'erreur personnalisé
+            $response = new JsonResponse([
+                'error' => 'true',
+                'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.'
+            ], 401);
+
+            // Remplacer la réponse de l'événement avec la réponse personnalisée
+            $event->setResponse($response);
+        }
     }
 }
