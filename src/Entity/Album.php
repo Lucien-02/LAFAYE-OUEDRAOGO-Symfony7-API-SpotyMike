@@ -190,7 +190,8 @@ class Album
             "cover" => 'yo',
             "year" => $this->getYear(),
             "createdAt" => $this->getCreateAt()->format('Y-m-d H:i:s'),
-            // "songs" => $songsData,
+            "songs" => [],
+            //"artist" => [],
         ];
     }
 }
